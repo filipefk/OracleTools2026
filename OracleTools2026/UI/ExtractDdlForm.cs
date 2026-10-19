@@ -23,6 +23,7 @@ public partial class ExtractDdlForm : Form
     private readonly ListViewColumnSorter _sorter = new();
 
     private CancellationTokenSource? _operationCancellation;
+    private bool _connectionChangedWhileBusy;
     private bool _updatingChecks;
 
     public ExtractDdlForm(
@@ -99,6 +100,15 @@ public partial class ExtractDdlForm : Form
             return;
         }
 
+        // A conexão é compartilhada com as outras telas. Os objetos listados são do banco anterior e não
+        // podem ser extraídos/recompilados no novo; com uma operação em andamento, descarta ao final dela.
+        if (IsBusy)
+        {
+            _connectionChangedWhileBusy = true;
+            return;
+        }
+
+        PopulateList([]);
         await RefreshConnectionInfoAsync();
     }
 
@@ -637,7 +647,8 @@ public partial class ExtractDdlForm : Form
 
     private async Task<bool> RunAsync(string description, Func<IProgress<ProgressInfo>, CancellationToken, Task> operation)
     {
-        if (IsBusy || (!_session.IsConnected && !ShowLogin()))
+        // O login dispara ConnectionChanged; IsBusy é conferido de novo depois dele (como em DatabaseToolForm).
+        if (IsBusy || (!_session.IsConnected && !ShowLogin()) || IsBusy)
         {
             return false;
         }
@@ -678,6 +689,12 @@ public partial class ExtractDdlForm : Form
         {
             _operationCancellation = null;
             SetBusy(false, null);
+
+            if (_connectionChangedWhileBusy && IsHandleCreated && !IsDisposed)
+            {
+                _connectionChangedWhileBusy = false;
+                BeginInvoke(() => Session_ConnectionChanged(this, EventArgs.Empty));
+            }
         }
     }
 

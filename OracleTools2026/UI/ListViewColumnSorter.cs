@@ -42,13 +42,18 @@ public sealed class ListViewColumnSorter : IComparer
 
         var result = TryParseDate(textX, out var dateX) && TryParseDate(textY, out var dateY)
             ? dateX.CompareTo(dateY)
-            : string.Compare(textX, textY, StringComparison.CurrentCultureIgnoreCase);
+            : TryParseNumber(textX, out var numberX) && TryParseNumber(textY, out var numberY)
+                ? numberX.CompareTo(numberY)
+                : string.Compare(textX, textY, StringComparison.CurrentCultureIgnoreCase);
 
         return Order == SortOrder.Descending ? -result : result;
     }
 
     private string GetText(ListViewItem item) =>
         SortColumn < item.SubItems.Count ? item.SubItems[SortColumn].Text : "";
+
+    private static bool TryParseNumber(string text, out decimal value) =>
+        decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out value);
 
     private static bool TryParseDate(string text, out DateTime value) =>
         DateTime.TryParseExact(text, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out value);

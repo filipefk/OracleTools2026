@@ -23,6 +23,9 @@ internal static class OracleExtensions
     public static DateTime? GetDateTimeOrNull(this OracleDataReader reader, int ordinal) =>
         reader.IsDBNull(ordinal) ? null : reader.GetDateTime(ordinal);
 
+    public static long GetInt64OrZero(this OracleDataReader reader, int ordinal) =>
+        reader.IsDBNull(ordinal) ? 0 : (long)reader.GetDecimal(ordinal);
+
     public static string GetNumberText(this OracleDataReader reader, int ordinal) =>
         reader.IsDBNull(ordinal) ? "" : reader.GetOracleDecimal(ordinal).ToString();
 

@@ -16,10 +16,16 @@ OracleTools2026/
 ├── Program.cs     # Generic Host + DI; roteia a ferramenta pelo 1º argumento (ex.: EXTRACT_DDL_SOURCE)
 ├── Models/        # records imutáveis (sem lógica de banco)
 ├── Settings/      # IAppSettings (registro), ISavedConnectionStore, LegacyCipher, SettingNames
-├── Data/          # IOracleSession + repositórios/serviços de banco (DatabaseObjectRepository, DdlExtractor, InvalidObjectRecompiler)
-├── Services/      # saída/integração com o SO (DdlOutputService)
-└── UI/            # *Form + *.Designer.cs, utilitários de tela
+├── Data/          # IOracleSession + repositórios/serviços de banco (DatabaseObjectRepository, DdlExtractor, SessionRepository, ScriptRunner...)
+├── Services/      # saída/integração com o SO (DdlOutputService, AppFiles, RealNameDirectory, ToolLauncher = nova instância)
+└── UI/            # MainForm (menu), *Form + *.Designer.cs, DatabaseToolForm (base), ToolCatalog, utilitários de tela
 ```
+
+- **Menu e ferramentas**: `UI/ToolCatalog.cs` lista as ferramentas (comando da linha de comando, título, descrição, grupo, glifo da Segoe Fluent Icons e tipo do formulário). O `Program` roteia pelo catálogo e o `MainForm` monta os botões a partir dele; o menu abre as ferramentas no mesmo processo (`UI/ToolWindowManager`, que cria os formulários com `ActivatorUtilities` — não registre as telas do catálogo no container), compartilhando a conexão do `IOracleSession`. "Nova instância" (`ToolLauncher`) e a linha de comando abrem outro processo, com conexão própria. Ao migrar uma ferramenta, adicione-a ao catálogo.
+- **Troca de conexão**: qualquer tela pode trocar a conexão de todas. Telas que listam dados do banco devem sobrescrever `OnConnectionChanged` para descartar/recarregar a lista (a base adia a chamada até o fim de uma operação em andamento).
+- **Telas de ferramenta** herdam de `DatabaseToolForm` (recebe `DatabaseToolDependencies`): título com dados do banco, `EnsureConnected`/`ShowLogin`, `RunAsync`, `CancelOperation`, `SetStatus`, `ShowServerInfoAsync`, `Ask`/`ShowInfo`/`ShowError`. Chame `BindStatus(statusLabel, progressBar)` após `InitializeComponent` e sobrescreva `OnBusyChanged` para habilitar/desabilitar controles. O construtor sem parâmetros existe só para o designer. (`ExtractDdlForm` ainda não usa a base.)
+- **Listas**: `ListViewExtensions` (copiar linhas, Ctrl+C/Ctrl+A, auto-ajuste de colunas, formatação de datas/durações/valores) e `ListViewColumnSorter` (ordena datas e números).
+- **Arquivos auxiliares** (`AppFiles`): procurados em `%APPDATA%\OracleTools2026` e depois na pasta do executável; gravações vão para o `%APPDATA%`. Leitura aceita ANSI (formato do original) e UTF-8.
 
 - `IOracleSession` (singleton) guarda a `ConnectionInfo` atual, abre conexões (pool do driver, uma conexão por operação) e expõe o evento `ConnectionChanged`. Também detecta e cacheia se existem as tabelas de auditoria `AESPROD.AUDITORIA_OBJETOS`.
 - Classes de `Data/` **não acessam a UI**: lançam exceções ou retornam resultados (ex.: `DdlExtractionResult` com `Error`). Só os formulários mostram `MessageBox`.

@@ -1,0 +1,4 @@
+# O designer do WinForms (Visual Studio) falha ao abrir arquivos com quebras de linha LF.
+*.cs     text eol=crlf
+*.resx   text eol=crlf
+*.csproj text eol=crlf
