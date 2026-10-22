@@ -150,11 +150,13 @@ public class DatabaseToolForm : Form
         }
     }
 
-    protected async Task<bool> RunAsync(string description, Func<IProgress<ProgressInfo>, CancellationToken, Task> operation)
+    // requiresConnection = false para operações que não usam o banco (ex.: consulta ao Active Directory).
+    protected async Task<bool> RunAsync(string description, Func<IProgress<ProgressInfo>, CancellationToken, Task> operation,
+        bool requiresConnection = true)
     {
         // O login (EnsureConnected) dispara ConnectionChanged, que pode iniciar outra operação na tela
         // enquanto o diálogo ainda está aberto; por isso IsBusy é conferido de novo depois dele.
-        if (IsBusy || !EnsureConnected() || IsBusy)
+        if (IsBusy || (requiresConnection && !EnsureConnected()) || IsBusy)
         {
             return false;
         }

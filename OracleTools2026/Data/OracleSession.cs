@@ -6,8 +6,6 @@ namespace OracleTools2026.Data;
 
 public sealed class OracleSession(IAppSettings settings) : IOracleSession
 {
-    private bool? _hasAuditTables;
-
     public ConnectionInfo? Current { get; private set; }
 
     public bool IsConnected => Current?.IsComplete == true;
@@ -25,7 +23,6 @@ public sealed class OracleSession(IAppSettings settings) : IOracleSession
         await TestAsync(connection, cancellationToken);
 
         Current = connection;
-        _hasAuditTables = null;
         settings.LastLoginUser = connection.User;
         settings.LastLoginDataSource = connection.DataSource;
         ConnectionChanged?.Invoke(this, EventArgs.Empty);
@@ -62,25 +59,5 @@ public sealed class OracleSession(IAppSettings settings) : IOracleSession
         }
 
         return oracleConnection;
-    }
-
-    public async Task<bool> HasAuditTablesAsync(OracleConnection connection, CancellationToken cancellationToken = default)
-    {
-        if (_hasAuditTables is { } cached)
-        {
-            return cached;
-        }
-
-        const string sql = """
-            SELECT COUNT(*)
-            FROM ALL_OBJECTS
-            WHERE OWNER = 'AESPROD'
-              AND OBJECT_NAME = 'AUDITORIA_OBJETOS'
-            """;
-
-        await using var command = connection.CreateTextCommand(sql);
-        var count = Convert.ToDecimal(await command.ExecuteScalarAsync(cancellationToken));
-        _hasAuditTables = count > 0;
-        return _hasAuditTables.Value;
     }
 }

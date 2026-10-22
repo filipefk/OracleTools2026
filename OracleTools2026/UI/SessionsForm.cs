@@ -6,9 +6,6 @@ namespace OracleTools2026.UI;
 
 public partial class SessionsForm : DatabaseToolForm
 {
-    // Sessões destes usuários são destacadas em amarelo (regra do original).
-    private static readonly HashSet<string> HighlightedUsers = new(["AESPROD", "GACESSGX"], StringComparer.OrdinalIgnoreCase);
-
     private readonly SessionRepository _repository;
     private readonly RealNameDirectory _realNames;
     private readonly ListViewColumnSorter _sorter = new();
@@ -149,11 +146,7 @@ public partial class SessionsForm : DatabaseToolForm
             session.State
         });
 
-        if (HighlightedUsers.Contains(session.UserName))
-        {
-            item.BackColor = Color.LightYellow;
-        }
-        else if (userRealName.Length > 0 && osUserRealName.Length > 0 && !RealNameDirectory.AreSameName(userRealName, osUserRealName))
+        if (userRealName.Length > 0 && osUserRealName.Length > 0 && !RealNameDirectory.AreSameName(userRealName, osUserRealName))
         {
             // Usuário do banco e usuário do SO pertencem a pessoas diferentes.
             item.BackColor = Color.LightGray;

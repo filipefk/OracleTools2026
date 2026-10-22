@@ -42,6 +42,12 @@ public sealed class RegistryAppSettings : IAppSettings
         set => SetFlag(SettingNames.InlineCompileErrorsOnDdlExtraction, value);
     }
 
+    public string? UserSearchFilter
+    {
+        get => GetValue(SettingNames.UserSearchFilter);
+        set => SetValue(SettingNames.UserSearchFilter, value);
+    }
+
     public string? GetValue(string name)
     {
         using var key = Registry.CurrentUser.OpenSubKey(RegistryPath, writable: false);

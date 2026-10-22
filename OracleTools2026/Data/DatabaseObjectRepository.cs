@@ -10,9 +10,6 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
     public static readonly IReadOnlyList<string> SupportedTypes =
         ["FUNCTION", "JOB", "PACKAGE", "PROCEDURE", "SEQUENCE", "TRIGGER", "TYPE", "VIEW", "JAVA SOURCE"];
 
-    // Sinônimos destes owners são ignorados ao procurar/contar objetos inválidos.
-    internal static readonly IReadOnlyList<string> IgnoredInvalidSynonymOwners = ["GIP981", "RAJADAS"];
-
     private const string NormalizedType = """
         CASE OBJECT_TYPE WHEN 'PACKAGE BODY' THEN 'PACKAGE' WHEN 'TYPE BODY' THEN 'TYPE' ELSE OBJECT_TYPE END
         """;
@@ -262,7 +259,7 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
 
     public async Task<IReadOnlyList<DatabaseObject>> GetInvalidAsync(CancellationToken cancellationToken = default)
     {
-        var where = $"(OBJECT_TYPE <> 'SYNONYM' OR OWNER NOT IN ({ToSqlList(IgnoredInvalidSynonymOwners)}))";
+        const string where = "1 = 1";
         const string having = "MAX(CASE WHEN STATUS <> 'VALID' THEN 1 ELSE 0 END) = 1";
 
         return await QueryObjectsAsync(where, having, "LAST_DDL_TIME DESC, OWNER, OBJECT_NAME", [], cancellationToken);
@@ -276,13 +273,9 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
         CancellationToken cancellationToken)
     {
         await using var connection = await session.OpenConnectionAsync(cancellationToken);
-        var lastModifiedBy = await session.HasAuditTablesAsync(connection, cancellationToken)
-            ? "AESPROD.FNC_USUARIO_LAST_DDL_OBJETO(OWNER, OBJECT_NAME)"
-            : "NULL";
 
         var sql = $"""
-            SELECT OWNER, OBJECT_NAME, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS,
-                   {lastModifiedBy} AS LAST_MODIFIED_BY
+            SELECT OWNER, OBJECT_NAME, OBJECT_TYPE, CREATED, LAST_DDL_TIME, STATUS
             FROM (
                 SELECT OWNER,
                        OBJECT_NAME,
@@ -311,8 +304,7 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
                     Type = reader.GetString(2),
                     CreatedAt = reader.GetDateTimeOrNull(3),
                     LastDdlAt = reader.GetDateTimeOrNull(4),
-                    Status = reader.GetStringOrEmpty(5),
-                    LastModifiedBy = reader.GetStringOrEmpty(6)
+                    Status = reader.GetStringOrEmpty(5)
                 });
             }
         }

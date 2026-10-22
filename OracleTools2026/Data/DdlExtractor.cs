@@ -153,49 +153,7 @@ public sealed partial class DdlExtractor(IOracleSession session)
             }
         }
 
-        if (await session.HasAuditTablesAsync(connection, cancellationToken))
-        {
-            header.Append(await BuildAuditHeaderAsync(connection, owner, name, cancellationToken));
-        }
-
         return header.ToString();
-    }
-
-    private static async Task<string> BuildAuditHeaderAsync(OracleConnection connection, string owner, string name, CancellationToken cancellationToken)
-    {
-        const string sql = """
-            SELECT MAX(AU.DATA_HORA) AS DATA_HORA,
-                   CO.NOME_COMPLETO,
-                   CO.EMAIL,
-                   AU.OSUSER,
-                   AU.CURRENT_USER,
-                   AU.HOST
-            FROM AESPROD.AUDITORIA_OBJETOS AU
-                LEFT JOIN AESPROD.CONTATO_CONTROLE_CONCORRENCIA CO
-                ON AU.ID_USUARIO = CO.ID
-            WHERE AU.OWNER = :owner
-              AND AU.NOME = :objectName
-            GROUP BY AU.OWNER, AU.NOME, CO.ID, CO.NOME_COMPLETO, CO.EMAIL, AU.OSUSER, AU.CURRENT_USER, AU.HOST
-            ORDER BY MAX(AU.DATA_HORA) DESC
-            """;
-
-        await using var command = connection.CreateTextCommand(sql, ("owner", owner), ("objectName", name));
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
-        {
-            return "";
-        }
-
-        var analyst = reader.IsDBNull(1) ? "INDEFINIDO" : reader.GetString(1);
-        var email = reader.GetStringOrEmpty(2).Trim();
-
-        return new StringBuilder()
-            .Append($"-- Último CREATE OR REPLACE ou DEBUG: {reader.GetDateTimeOrNull(0):dd/MM/yy HH:mm:ss}\n")
-            .Append($"-- Analista: {analyst}{(email.Length > 0 ? $" <{email}>" : "")}\n")
-            .Append($"-- Usuário de banco: {reader.GetStringOrEmpty(4)}\n")
-            .Append($"-- Nome da máquina: {reader.GetStringOrEmpty(5)}\n")
-            .Append($"-- Usuário da máquina: {reader.GetStringOrEmpty(3)}\n")
-            .ToString();
     }
 
     private static async Task<string> ExtractStoredSourceAsync(

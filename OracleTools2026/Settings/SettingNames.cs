@@ -9,6 +9,8 @@ public static class SettingNames
     public const string IncludeHeaderOnDdlExtraction = "ColocarCabecalhoAoExtrairDDL";
     public const string InlineCompileErrorsOnDdlExtraction = "ColocarMensagemErroNaLinhaAoExtrairDDL";
     public const string SavedOracleConnections = "ConexoesORACLE";
+    public const string SavedDirectoryConnections = "ConexoesAD";
+    public const string UserSearchFilter = "FiltroPesquisaUsuarios";
 
     private static readonly Dictionary<string, string> FriendlyNames = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -19,10 +21,11 @@ public static class SettingNames
         [IncludeHeaderOnDdlExtraction] = "Colocar cabeçalho ao extrair DDL",
         [InlineCompileErrorsOnDdlExtraction] = "Colocar mensagem de erro na linha ao extrair DDL",
         [SavedOracleConnections] = "Conexões de banco ORACLE salvas encriptadas",
+        [SavedDirectoryConnections] = "Conexões do Active Directory salvas encriptadas",
+        [UserSearchFilter] = "Filtro SQL padrão para pesquisa de usuários",
         ["ConexoesFTPSalvas"] = "Conexões FTP salvas encriptadas",
         ["ConexoesSVNSalvas"] = "Conexões SVN salvas encriptadas",
         ["CaminhoExeTortoiseSVN"] = "Caminho do executável do Tortoise SVN",
-        ["FiltroPesquisaUsuarios"] = "Filtro padrão para pesquisa de usuário sem filtro",
         ["PastaImagensRelatoriosHtml"] = "Pasta de imagens para relatórios HTML",
         ["CaminhoListagemTrunk"] = "Caminho do arquivo de listagem do Trunk",
         ["CaminhoListagemBranches"] = "Caminho do arquivo de listagem dos branches"

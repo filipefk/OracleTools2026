@@ -259,8 +259,7 @@ public partial class ExtractDdlForm : Form
             obj.CreatedAt?.ToString(ListViewColumnSorter.DateFormat) ?? "",
             obj.LastDdlAt?.ToString(ListViewColumnSorter.DateFormat) ?? "",
             obj.Status,
-            obj.ErrorMessage.ReplaceLineEndings(" | "),
-            obj.LastModifiedBy
+            obj.ErrorMessage.ReplaceLineEndings(" | ")
         });
 
         if (obj.Status != "VALID")

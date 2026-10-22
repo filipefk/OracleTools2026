@@ -10,9 +10,6 @@ public sealed class RealNameDirectory
     private const string CacheFileName = "ListaNomesAd.txt";
     private const string UserListFileName = "Lista_Usuarios2.txt";
 
-    // Usuários genéricos que o original não procurava na lista de usuários.
-    private static readonly HashSet<string> IgnoredLogins = new(["AESPROD", "GDP981", "GIP981", "PARALELO"], StringComparer.OrdinalIgnoreCase);
-
     public async Task<IReadOnlyDictionary<string, string>> ResolveAsync(IEnumerable<string> logins, CancellationToken cancellationToken = default)
     {
         var names = await LoadCacheAsync(cancellationToken);
@@ -65,11 +62,6 @@ public sealed class RealNameDirectory
 
     private static string? FindInUserList(string login, IReadOnlyList<string[]> userList)
     {
-        if (IgnoredLogins.Contains(login))
-        {
-            return null;
-        }
-
         // O original pegava a primeira linha que contivesse o login; a coincidência exata na 1ª coluna tem prioridade.
         var columns = userList.FirstOrDefault(c => c[0].Equals(login, StringComparison.OrdinalIgnoreCase))
                       ?? userList.FirstOrDefault(c => c.Any(value => value.Contains(login, StringComparison.OrdinalIgnoreCase)));

@@ -76,12 +76,10 @@ public sealed class InvalidObjectRecompiler(IOracleSession session)
 
     private static async Task<int> CountInvalidAsync(OracleConnection connection, CancellationToken cancellationToken)
     {
-        var ignoredOwners = string.Join(", ", DatabaseObjectRepository.IgnoredInvalidSynonymOwners.Select(o => $"'{o}'"));
-        var sql = $"""
+        const string sql = """
             SELECT COUNT(*)
             FROM ALL_OBJECTS
             WHERE STATUS <> 'VALID'
-              AND (OBJECT_TYPE <> 'SYNONYM' OR OWNER NOT IN ({ignoredOwners}))
             """;
 
         await using var command = connection.CreateTextCommand(sql);

@@ -48,7 +48,6 @@ partial class ExtractDdlForm
         lastDdlColumn = new ColumnHeader();
         statusColumn = new ColumnHeader();
         errorColumn = new ColumnHeader();
-        lastModifiedByColumn = new ColumnHeader();
         objectContextMenu = new ContextMenuStrip(components);
         listHeaderPanel = new FlowLayoutPanel();
         selectAllCheckBox = new CheckBox();
@@ -313,7 +312,7 @@ partial class ExtractDdlForm
         // objectsListView
         // 
         objectsListView.CheckBoxes = true;
-        objectsListView.Columns.AddRange(new ColumnHeader[] { ownerColumn, nameColumn, typeColumn, createdColumn, lastDdlColumn, statusColumn, errorColumn, lastModifiedByColumn });
+        objectsListView.Columns.AddRange(new ColumnHeader[] { ownerColumn, nameColumn, typeColumn, createdColumn, lastDdlColumn, statusColumn, errorColumn });
         objectsListView.ContextMenuStrip = objectContextMenu;
         objectsListView.Dock = DockStyle.Fill;
         objectsListView.FullRowSelect = true;
@@ -363,11 +362,6 @@ partial class ExtractDdlForm
         // 
         errorColumn.Text = "Mensagem";
         errorColumn.Width = 200;
-        // 
-        // lastModifiedByColumn
-        // 
-        lastModifiedByColumn.Text = "Último alterador";
-        lastModifiedByColumn.Width = 140;
         // 
         // objectContextMenu
         // 
@@ -795,7 +789,6 @@ partial class ExtractDdlForm
     private ColumnHeader lastDdlColumn;
     private ColumnHeader statusColumn;
     private ColumnHeader errorColumn;
-    private ColumnHeader lastModifiedByColumn;
     private ContextMenuStrip objectContextMenu;
     private FlowLayoutPanel listHeaderPanel;
     private CheckBox selectAllCheckBox;

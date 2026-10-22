@@ -7,6 +7,7 @@ namespace OracleTools2026.UI;
 public static class ToolCatalog
 {
     public const string ObjectsGroup = "Objetos de banco";
+    public const string UsersGroup = "Usuários";
     public const string MonitoringGroup = "Monitoramento";
 
     public static IReadOnlyList<ToolDefinition> Tools { get; } =
@@ -14,6 +15,12 @@ public static class ToolCatalog
         new("EXTRACT_DDL_SOURCE", "Extrair DDL de objetos",
             "Lista objetos, últimas compilações e inválidos; extrai a DDL e recompila inválidos.",
             ObjectsGroup, "", typeof(ExtractDdlForm)),
+        new("EXTRACT_DDL_USER", "Extrair script de usuários",
+            "Lista usuários por owner, profile e nome e gera o script de criação com cotas, roles e grants.",
+            UsersGroup, "", typeof(ExtractUserForm)),
+        new("DETALHES_USER", "Detalhes de um usuário",
+            "Propriedades, profile, cotas, privilégios, roles e grants; busca o usuário no Active Directory.",
+            UsersGroup, "", typeof(UserDetailsForm)),
         new("PROCURA_LOCK_BANCO", "Procurar lock de banco",
             "Executa periodicamente os scripts de lock e avisa quando encontrar.",
             MonitoringGroup, "", typeof(LockMonitorForm)),
@@ -30,4 +37,7 @@ public static class ToolCatalog
 
     public static ToolDefinition? Find(string command) =>
         Tools.FirstOrDefault(t => t.Command.Equals(command.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    public static ToolDefinition? Find(Type formType) =>
+        Tools.FirstOrDefault(t => t.FormType == formType);
 }

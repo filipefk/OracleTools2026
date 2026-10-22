@@ -11,17 +11,28 @@ public sealed class ToolWindowManager(IServiceProvider serviceProvider)
 
     public IReadOnlyList<Form> OpenForms => _openForms;
 
-    public Form Create(ToolDefinition tool) =>
-        (Form)ActivatorUtilities.CreateInstance(serviceProvider, tool.FormType);
-
-    public void Open(ToolDefinition tool)
+    public Form Create(ToolDefinition tool, string? argument = null)
     {
-        var form = Create(tool);
+        var form = (Form)ActivatorUtilities.CreateInstance(serviceProvider, tool.FormType);
+        if (!string.IsNullOrWhiteSpace(argument) && form is IToolArgumentReceiver receiver)
+        {
+            receiver.SetToolArgument(argument.Trim());
+        }
+
+        return form;
+    }
+
+    public void Open(ToolDefinition tool, string? argument = null)
+    {
+        var form = Create(tool, argument);
         form.FormClosed += (_, _) => _openForms.Remove(form);
 
         _openForms.Add(form);
         form.Show();
     }
+
+    public void Open<TForm>(string? argument = null) where TForm : Form =>
+        Open(ToolCatalog.Find(typeof(TForm)) ?? throw new InvalidOperationException($"{typeof(TForm).Name} não está no catálogo."), argument);
 
     // Retorna false se alguma janela cancelar o próprio fechamento.
     public bool CloseAll()

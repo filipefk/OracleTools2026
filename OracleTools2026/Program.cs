@@ -30,8 +30,10 @@ internal static class Program
         }
 
         // Pela linha de comando a ferramenta roda isolada, em um processo com a sua própria conexão.
+        // O 5º argumento (ex.: nome do usuário em DETALHES_USER) vai para a tela, como no original.
         TryConnectFromArguments(services.GetRequiredService<IOracleSession>(), args);
-        Application.Run(services.GetRequiredService<ToolWindowManager>().Create(tool));
+        var argument = args.Length > 4 ? args[4] : null;
+        Application.Run(services.GetRequiredService<ToolWindowManager>().Create(tool, argument));
     }
 
     private static IHost CreateHost()
@@ -41,8 +43,11 @@ internal static class Program
 
         services.AddSingleton<IAppSettings, RegistryAppSettings>();
         services.AddSingleton<ISavedConnectionStore, SavedConnectionStore>();
+        services.AddSingleton<ISavedDirectoryConnectionStore, SavedDirectoryConnectionStore>();
         services.AddSingleton<IOracleSession, OracleSession>();
         services.AddSingleton<DatabaseObjectRepository>();
+        services.AddSingleton<DatabaseUserRepository>();
+        services.AddSingleton<UserScriptGenerator>();
         services.AddSingleton<DdlExtractor>();
         services.AddSingleton<InvalidObjectRecompiler>();
         services.AddSingleton<ScriptRunner>();
@@ -52,6 +57,7 @@ internal static class Program
         services.AddSingleton<DdlOutputService>();
         services.AddSingleton<LockScriptStore>();
         services.AddSingleton<RealNameDirectory>();
+        services.AddSingleton<ActiveDirectoryService>();
         services.AddSingleton<ToolLauncher>();
         services.AddSingleton<ToolWindowManager>();
         services.AddSingleton<DatabaseToolDependencies>();
@@ -61,7 +67,9 @@ internal static class Program
         services.AddTransient<LoginForm>();
         services.AddTransient<SettingsForm>();
         services.AddTransient<DatabaseInfoForm>();
+        services.AddTransient<DirectoryLoginForm>();
         services.AddSingleton<Func<LoginForm>>(sp => () => sp.GetRequiredService<LoginForm>());
+        services.AddSingleton<Func<DirectoryLoginForm>>(sp => () => sp.GetRequiredService<DirectoryLoginForm>());
         services.AddSingleton<Func<SettingsForm>>(sp => () => sp.GetRequiredService<SettingsForm>());
         services.AddSingleton<Func<DatabaseInfoForm>>(sp => () => sp.GetRequiredService<DatabaseInfoForm>());
 

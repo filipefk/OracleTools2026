@@ -9,7 +9,6 @@ public sealed record DatabaseObject
     public DateTime? LastDdlAt { get; init; }
     public string Status { get; init; } = "";
     public string ErrorMessage { get; init; } = "";
-    public string LastModifiedBy { get; init; } = "";
 
     public string QualifiedName => $"{Owner}.{Name}";
 

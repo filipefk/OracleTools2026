@@ -178,7 +178,7 @@ partial class SessionsForm
         legendLabel.Name = "legendLabel";
         legendLabel.Size = new Size(470, 15);
         legendLabel.TabIndex = 5;
-        legendLabel.Text = "Amarelo: usuários AESPROD/GACESSGX  •  Cinza: usuário do banco e do SO de pessoas diferentes";
+        legendLabel.Text = "Cinza: usuário do banco e do SO de pessoas diferentes";
         //
         // sessionsListView
         //

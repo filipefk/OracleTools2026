@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.301" />
+    <PackageReference Include="System.DirectoryServices" Version="10.0.13" />
   </ItemGroup>
 
 </Project>

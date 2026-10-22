@@ -15,19 +15,20 @@ Orientações para trabalhar neste repositório. Visão geral do produto e das f
 OracleTools2026/
 ├── Program.cs     # Generic Host + DI; roteia a ferramenta pelo 1º argumento (ex.: EXTRACT_DDL_SOURCE)
 ├── Models/        # records imutáveis (sem lógica de banco)
-├── Settings/      # IAppSettings (registro), ISavedConnectionStore, LegacyCipher, SettingNames
-├── Data/          # IOracleSession + repositórios/serviços de banco (DatabaseObjectRepository, DdlExtractor, SessionRepository, ScriptRunner...)
-├── Services/      # saída/integração com o SO (DdlOutputService, AppFiles, RealNameDirectory, ToolLauncher = nova instância)
+├── Settings/      # IAppSettings (registro), conexões salvas (Oracle e AD, via ObfuscatedRecordList), LegacyCipher, SettingNames
+├── Data/          # IOracleSession + repositórios/serviços de banco (DatabaseObjectRepository, DdlExtractor, DatabaseUserRepository, UserScriptGenerator, ScriptRunner...)
+├── Services/      # saída/integração com o SO (DdlOutputService, AppFiles, RealNameDirectory, ActiveDirectoryService, ToolLauncher = nova instância)
 └── UI/            # MainForm (menu), *Form + *.Designer.cs, DatabaseToolForm (base), ToolCatalog, utilitários de tela
 ```
 
-- **Menu e ferramentas**: `UI/ToolCatalog.cs` lista as ferramentas (comando da linha de comando, título, descrição, grupo, glifo da Segoe Fluent Icons e tipo do formulário). O `Program` roteia pelo catálogo e o `MainForm` monta os botões a partir dele; o menu abre as ferramentas no mesmo processo (`UI/ToolWindowManager`, que cria os formulários com `ActivatorUtilities` — não registre as telas do catálogo no container), compartilhando a conexão do `IOracleSession`. "Nova instância" (`ToolLauncher`) e a linha de comando abrem outro processo, com conexão própria. Ao migrar uma ferramenta, adicione-a ao catálogo.
+- **Menu e ferramentas**: `UI/ToolCatalog.cs` lista as ferramentas (comando da linha de comando, título, descrição, grupo, glifo da Segoe Fluent Icons e tipo do formulário). O `Program` roteia pelo catálogo e o `MainForm` monta os botões a partir dele; o menu abre as ferramentas no mesmo processo (`UI/ToolWindowManager`, que cria os formulários com `ActivatorUtilities` — não registre as telas do catálogo no container), compartilhando a conexão do `IOracleSession`. "Nova instância" (`ToolLauncher`) e a linha de comando abrem outro processo, com conexão própria. Ao migrar uma ferramenta, adicione-a ao catálogo. Telas que aceitam o 5º argumento da linha de comando (ex.: nome do usuário em `DETALHES_USER`) implementam `IToolArgumentReceiver`; para abrir uma ferramenta a partir de outra, use `ToolWindowManager.Open<TForm>(argumento)`.
 - **Troca de conexão**: qualquer tela pode trocar a conexão de todas. Telas que listam dados do banco devem sobrescrever `OnConnectionChanged` para descartar/recarregar a lista (a base adia a chamada até o fim de uma operação em andamento).
-- **Telas de ferramenta** herdam de `DatabaseToolForm` (recebe `DatabaseToolDependencies`): título com dados do banco, `EnsureConnected`/`ShowLogin`, `RunAsync`, `CancelOperation`, `SetStatus`, `ShowServerInfoAsync`, `Ask`/`ShowInfo`/`ShowError`. Chame `BindStatus(statusLabel, progressBar)` após `InitializeComponent` e sobrescreva `OnBusyChanged` para habilitar/desabilitar controles. O construtor sem parâmetros existe só para o designer. (`ExtractDdlForm` ainda não usa a base.)
+- **Telas de ferramenta** herdam de `DatabaseToolForm` (recebe `DatabaseToolDependencies`): título com dados do banco, `EnsureConnected`/`ShowLogin`, `RunAsync` (com `requiresConnection: false` para operações que não usam o banco), `CancelOperation`, `SetStatus`, `ShowServerInfoAsync`, `Ask`/`ShowInfo`/`ShowError`. Chame `BindStatus(statusLabel, progressBar)` após `InitializeComponent` e sobrescreva `OnBusyChanged` para habilitar/desabilitar controles. O construtor sem parâmetros existe só para o designer. (`ExtractDdlForm` ainda não usa a base.)
 - **Listas**: `ListViewExtensions` (copiar linhas, Ctrl+C/Ctrl+A, auto-ajuste de colunas, formatação de datas/durações/valores) e `ListViewColumnSorter` (ordena datas e números).
 - **Arquivos auxiliares** (`AppFiles`): procurados em `%APPDATA%\OracleTools2026` e depois na pasta do executável; gravações vão para o `%APPDATA%`. Leitura aceita ANSI (formato do original) e UTF-8.
 
-- `IOracleSession` (singleton) guarda a `ConnectionInfo` atual, abre conexões (pool do driver, uma conexão por operação) e expõe o evento `ConnectionChanged`. Também detecta e cacheia se existem as tabelas de auditoria `AESPROD.AUDITORIA_OBJETOS`.
+- `IOracleSession` (singleton) guarda a `ConnectionInfo` atual, abre conexões (pool do driver, uma conexão por operação) e expõe o evento `ConnectionChanged`.
+- Consultas usam apenas objetos do próprio Oracle (dicionário de dados, `V$`/`GV$`, `DBMS_*`). **Não** referenciar tabelas, funções ou schemas de aplicação (ex.: `AESPROD`, `HORACIUS`, `ORADBA`), mesmo que o original os use.
 - Classes de `Data/` **não acessam a UI**: lançam exceções ou retornam resultados (ex.: `DdlExtractionResult` com `Error`). Só os formulários mostram `MessageBox`.
 - Formulários são resolvidos pelo container. Formulários abertos a partir de outro são injetados como `Func<TForm>` (registrado em `Program.CreateHost`). Ao criar uma nova tela/serviço, registre-o em `CreateHost`.
 - Operações de banco na UI: usar o helper `RunAsync` da tela (desabilita controles, mostra progresso, permite cancelar) e chamar os serviços dentro de `Task.Run(...)` para não bloquear a thread de UI.
@@ -45,13 +46,13 @@ OracleTools2026/
 ## Compatibilidade obrigatória com o original
 
 - Preferências no registro em `HKCU\Software\ORACLE_Tools\Parametros`, **com os mesmos nomes de chave** (constantes em `Settings/SettingNames.cs`). Flags booleanas aceitam `1/0/TRUE/FALSE/SIM/NÃO` e são gravadas como `1`/`0`.
-- Conexões salvas (`ConexoesORACLE`): manter o formato e a ofuscação de `SavedConnectionStore` e a criptografia de `LegacyCipher` (AES-CBC, PBKDF2-SHA1 1000 iterações, mesmas chaves), para que as duas versões leiam os mesmos dados.
+- Conexões salvas (`ConexoesORACLE` e `ConexoesAD`): manter o formato e a ofuscação de `ObfuscatedRecordList` e a criptografia de `LegacyCipher` (AES-CBC, PBKDF2-SHA1 1000 iterações, mesmas chaves), para que as duas versões leiam os mesmos dados.
 - Linha de comando: `<FERRAMENTA> [usuario senha alias_tns]`, com os mesmos nomes de ferramenta do original (`EXTRACT_DDL_SOURCE`, `EXTRACT_DDL_USER`, `DETALHES_USER`, `SESSOES`, `DBLINKS`, `JOBS_DE_BANCO`...).
 
 ## Build
 
 - Não compilar nem rodar build automaticamente após edições; o usuário compila no Visual Studio e informa os erros.
-- Projeto: `OracleTools2026/OracleTools2026.csproj` (`PlatformTarget` x64). Pacotes: `Oracle.ManagedDataAccess.Core`, `Microsoft.Extensions.Hosting`.
+- Projeto: `OracleTools2026/OracleTools2026.csproj` (`PlatformTarget` x64). Pacotes: `Oracle.ManagedDataAccess.Core`, `Microsoft.Extensions.Hosting`, `System.DirectoryServices`.
 
 ## Instalador
 

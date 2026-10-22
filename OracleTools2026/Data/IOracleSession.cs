@@ -13,5 +13,4 @@ public interface IOracleSession
     Task TestAsync(ConnectionInfo connection, CancellationToken cancellationToken = default);
     Task ConnectAsync(ConnectionInfo connection, CancellationToken cancellationToken = default);
     Task<OracleConnection> OpenConnectionAsync(CancellationToken cancellationToken = default);
-    Task<bool> HasAuditTablesAsync(OracleConnection connection, CancellationToken cancellationToken = default);
 }

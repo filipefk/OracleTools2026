@@ -1,8 +1,9 @@
 using Oracle.ManagedDataAccess.Client;
+using System.Text.RegularExpressions;
 
 namespace OracleTools2026.Data;
 
-internal static class OracleExtensions
+internal static partial class OracleExtensions
 {
     public static OracleCommand CreateTextCommand(this OracleConnection connection, string sql, params (string Name, object? Value)[] parameters)
     {
@@ -32,4 +33,13 @@ internal static class OracleExtensions
     public static string Quote(string identifier) => $"\"{identifier.Replace("\"", "\"\"")}\"";
 
     public static string Quote(string owner, string name) => $"{Quote(owner)}.{Quote(name)}";
+
+    // Para scripts legíveis: só usa aspas quando o nome não é um identificador simples em maiúsculas.
+    public static string QuoteIfNeeded(string identifier) =>
+        SimpleIdentifierPattern().IsMatch(identifier) ? identifier : Quote(identifier);
+
+    public static string QuoteIfNeeded(string owner, string name) => $"{QuoteIfNeeded(owner)}.{QuoteIfNeeded(name)}";
+
+    [GeneratedRegex(@"^[A-Z][A-Z0-9_$#]*$")]
+    private static partial Regex SimpleIdentifierPattern();
 }
