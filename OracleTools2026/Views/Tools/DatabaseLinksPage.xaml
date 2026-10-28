@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<views:ToolPage
+    x:Class="OracleTools2026.Views.Tools.DatabaseLinksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:OracleTools2026.Views"
+    xmlns:controls="using:OracleTools2026.Controls"
+    xmlns:ui="using:OracleTools2026.UI"
+    xmlns:tv="using:WinUI.TableView">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="24,16,16,8" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind ViewModel.ToolTitle}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ServerInfo, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Label="Atualizar" Command="{x:Bind ViewModel.RefreshCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE72C;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Testar todos" Command="{x:Bind ViewModel.TestAllCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE9D5;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Testar selecionados" Command="{x:Bind ViewModel.TestSelectedCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE73A;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Informações do banco" Command="{x:Bind ViewModel.ShowServerInfoCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE946;" /></AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <InfoBar Grid.Row="1" Margin="24,0,24,8"
+                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                 Severity="{x:Bind ui:BindingHelpers.Severity(ViewModel.NoticeKind), Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}" />
+
+        <tv:TableView x:Name="LinksTable" Grid.Row="2" Margin="24,0,24,12"
+                      Style="{StaticResource ToolTableViewStyle}"
+                      ItemsSource="{x:Bind ViewModel.Links.Items}">
+            <tv:TableView.RowContextFlyout>
+                <MenuFlyout />
+            </tv:TableView.RowContextFlyout>
+            <tv:TableView.ConditionalCellStyles>
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsPending}" Style="{StaticResource MutedCellStyle}" />
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsOk}" Style="{StaticResource SuccessCellStyle}" />
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsError}" Style="{StaticResource CriticalCellStyle}" />
+            </tv:TableView.ConditionalCellStyles>
+            <tv:TableView.Columns>
+                <tv:TableViewTextColumn Header="CREATED" Binding="{Binding CreatedAtText}" SortMemberPath="CreatedAt" />
+                <tv:TableViewTextColumn Header="OWNER" Binding="{Binding Owner}" />
+                <tv:TableViewTextColumn Header="DB_LINK" Binding="{Binding Name}" />
+                <tv:TableViewTextColumn Header="TESTE" Binding="{Binding TestText}" />
+                <tv:TableViewTextColumn Header="USERNAME" Binding="{Binding UserName}" />
+                <tv:TableViewTextColumn Header="HOST" Binding="{Binding Host}" />
+            </tv:TableView.Columns>
+        </tv:TableView>
+
+        <controls:ToolStatusBar Grid.Row="3" ViewModel="{x:Bind ViewModel}" ExtraText="{x:Bind ViewModel.CountText, Mode=OneWay}" />
+    </Grid>
+</views:ToolPage>

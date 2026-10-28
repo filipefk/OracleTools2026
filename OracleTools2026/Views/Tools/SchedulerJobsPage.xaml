@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<views:ToolPage
+    x:Class="OracleTools2026.Views.Tools.SchedulerJobsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:OracleTools2026.Views"
+    xmlns:controls="using:OracleTools2026.Controls"
+    xmlns:ui="using:OracleTools2026.UI"
+    xmlns:tv="using:WinUI.TableView">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="24,16,16,8" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind ViewModel.ToolTitle}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ServerInfo, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Label="Atualizar" Command="{x:Bind ViewModel.RefreshCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE72C;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Informações do banco" Command="{x:Bind ViewModel.ShowServerInfoCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE946;" /></AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <InfoBar Grid.Row="1" Margin="24,0,24,8"
+                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                 Severity="{x:Bind ui:BindingHelpers.Severity(ViewModel.NoticeKind), Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}" />
+
+        <!-- Legenda das cores -->
+        <StackPanel Grid.Row="2" Margin="24,0,24,8" Orientation="Horizontal" Spacing="20">
+            <StackPanel Orientation="Horizontal">
+                <Border Style="{StaticResource LegendSwatchStyle}" Background="{ThemeResource SystemFillColorCriticalBrush}" />
+                <TextBlock Text="Atrasado (possivelmente travado)" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Border Style="{StaticResource LegendSwatchStyle}" Background="{ThemeResource SystemFillColorCautionBrush}" />
+                <TextBlock Text="Rodando há mais de 1 hora" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Border Style="{StaticResource LegendSwatchStyle}" Background="{ThemeResource TextFillColorTertiaryBrush}" />
+                <TextBlock Text="Desabilitado" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+
+        <tv:TableView x:Name="JobsTable" Grid.Row="3" Margin="24,0,24,12"
+                      Style="{StaticResource ToolTableViewStyle}"
+                      ItemsSource="{x:Bind ViewModel.Jobs.Items}">
+            <tv:TableView.RowContextFlyout>
+                <MenuFlyout />
+            </tv:TableView.RowContextFlyout>
+            <tv:TableView.ConditionalCellStyles>
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsDisabled}" Style="{StaticResource MutedCellStyle}" />
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsOverdue}" Style="{StaticResource CriticalCellStyle}" />
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsLongRunning}" Style="{StaticResource CautionCellStyle}" />
+            </tv:TableView.ConditionalCellStyles>
+            <tv:TableView.Columns>
+                <tv:TableViewTextColumn Header="CRIACAO" Binding="{Binding CreatedAtText}" SortMemberPath="CreatedAt" />
+                <tv:TableViewTextColumn Header="ULTIMA_ALTERACAO" Binding="{Binding LastDdlAtText}" SortMemberPath="LastDdlAt" />
+                <tv:TableViewTextColumn Header="OWNER" Binding="{Binding Owner}" />
+                <tv:TableViewTextColumn Header="JOB_NAME" Binding="{Binding Name}" />
+                <tv:TableViewTextColumn Header="JOB_ACTION" Binding="{Binding ActionText}" />
+                <tv:TableViewTextColumn Header="ENABLED" Binding="{Binding EnabledText}" />
+                <tv:TableViewTextColumn Header="JOB_TYPE" Binding="{Binding JobType}" />
+                <tv:TableViewTextColumn Header="PROGRAM_OWNER" Binding="{Binding ProgramOwner}" />
+                <tv:TableViewTextColumn Header="PROGRAM_NAME" Binding="{Binding ProgramName}" />
+                <tv:TableViewTextColumn Header="SCHEDULE_OWNER" Binding="{Binding ScheduleOwner}" />
+                <tv:TableViewTextColumn Header="SCHEDULE_NAME" Binding="{Binding ScheduleName}" />
+                <tv:TableViewTextColumn Header="SCHEDULE_TYPE" Binding="{Binding ScheduleType}" />
+                <tv:TableViewTextColumn Header="REPEAT_INTERVAL" Binding="{Binding RepeatInterval}" />
+                <tv:TableViewTextColumn Header="LAST_START_DATE" Binding="{Binding LastStartDateText}" SortMemberPath="LastStartDate" />
+                <tv:TableViewTextColumn Header="LAST_RUN_DURATION" Binding="{Binding LastRunDurationText}" SortMemberPath="LastRunDuration" />
+                <tv:TableViewTextColumn Header="NEXT_RUN_DATE" Binding="{Binding NextRunDateText}" SortMemberPath="NextRunDate" />
+                <tv:TableViewTextColumn Header="RUN_COUNT" Binding="{Binding RunCount}" />
+                <tv:TableViewTextColumn Header="FAILURE_COUNT" Binding="{Binding FailureCount}" />
+                <tv:TableViewTextColumn Header="COMMENTS" Binding="{Binding Comments}" />
+                <tv:TableViewTextColumn Header="STATE" Binding="{Binding State}" />
+                <tv:TableViewTextColumn Header="SITUACAO" Binding="{Binding HealthText}" />
+            </tv:TableView.Columns>
+        </tv:TableView>
+
+        <controls:ToolStatusBar Grid.Row="4" ViewModel="{x:Bind ViewModel}" ExtraText="{x:Bind ViewModel.CountText, Mode=OneWay}" />
+    </Grid>
+</views:ToolPage>

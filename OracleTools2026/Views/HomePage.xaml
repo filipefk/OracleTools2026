@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="OracleTools2026.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:OracleTools2026.Models"
+    xmlns:local="using:OracleTools2026.Views"
+    NavigationCacheMode="Required">
+
+    <Page.Resources>
+        <DataTemplate x:Key="ToolCardTemplate" x:DataType="models:ToolDefinition">
+            <Grid Width="320" Height="104" Padding="16" ColumnSpacing="16"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                  CornerRadius="{StaticResource OverlayCornerRadius}"
+                  ToolTipService.ToolTip="{x:Bind local:HomePage.GetToolTip(Command, Description)}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon Glyph="{x:Bind Glyph}" FontSize="28" VerticalAlignment="Top"
+                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="{x:Bind Title}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind Description}" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <StackPanel Padding="36,24,36,36" Spacing="8" MaxWidth="1400" HorizontalAlignment="Left">
+            <TextBlock Text="Oracle Tools" Style="{StaticResource TitleLargeTextBlockStyle}" />
+            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Text="Escolha uma ferramenta. Todas usam a mesma conexão; para usar outra ao mesmo tempo, abra uma nova instância (Ctrl+N). Clique com o botão direito em uma ferramenta do menu para abri-la em uma nova janela." />
+
+            <InfoBar x:Name="ConnectionInfoBar" IsOpen="True" IsClosable="False" Margin="0,12,0,0">
+                <InfoBar.ActionButton>
+                    <Button Content="Conectar..." Click="ConnectButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <ItemsControl x:Name="GroupsControl" Margin="0,8,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:ToolGroup">
+                        <StackPanel Spacing="8" Margin="0,16,0,0">
+                            <TextBlock Text="{x:Bind Name}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <GridView ItemsSource="{x:Bind Tools}" ItemTemplate="{StaticResource ToolCardTemplate}"
+                                      SelectionMode="None" IsItemClickEnabled="True" ItemClick="ToolGridView_ItemClick" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock x:Name="VersionText" Margin="0,24,0,0" Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:WinUI.TableView">
+
+    <FontFamily x:Key="MonospaceFontFamily">Cascadia Mono, Consolas</FontFamily>
+
+    <!-- Cores das linhas das listas (funcionam nos temas claro e escuro). -->
+    <Style x:Key="CriticalCellStyle" TargetType="tv:TableViewCell">
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+    </Style>
+    <Style x:Key="CautionCellStyle" TargetType="tv:TableViewCell">
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+    </Style>
+    <Style x:Key="SuccessCellStyle" TargetType="tv:TableViewCell">
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}" />
+    </Style>
+    <Style x:Key="MutedCellStyle" TargetType="tv:TableViewCell">
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+    </Style>
+    <Style x:Key="HighlightedCellStyle" TargetType="tv:TableViewCell">
+        <Setter Property="Background" Value="{ThemeResource SystemFillColorNeutralBackgroundBrush}" />
+    </Style>
+
+    <Style x:Key="ToolTableViewStyle" TargetType="tv:TableView">
+        <Setter Property="AutoGenerateColumns" Value="False" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="SelectionMode" Value="Extended" />
+        <Setter Property="SelectionUnit" Value="Row" />
+        <Setter Property="CanFilterColumns" Value="True" />
+        <Setter Property="CanSortColumns" Value="True" />
+        <Setter Property="CanResizeColumns" Value="True" />
+        <Setter Property="CornerButtonMode" Value="SelectAll" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="ForceRowOrCellSelectionOnContextRequested" Value="True" />
+        <Setter Property="MaxColumnWidth" Value="450" />
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+    </Style>
+
+    <Style x:Key="MonospaceTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource MonospaceFontFamily}" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="IsSpellCheckEnabled" Value="False" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <!-- Área de filtros/opções em cartão, no estilo do Windows 11. -->
+    <Style x:Key="CardPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <Style x:Key="LegendSwatchStyle" TargetType="Border">
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,6,0" />
+    </Style>
+</ResourceDictionary>

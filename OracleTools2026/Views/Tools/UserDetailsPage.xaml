@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<views:ToolPage
+    x:Class="OracleTools2026.Views.Tools.UserDetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:OracleTools2026.Views"
+    xmlns:local="using:OracleTools2026.Views.Tools"
+    xmlns:controls="using:OracleTools2026.Controls"
+    xmlns:ui="using:OracleTools2026.UI"
+    xmlns:vm="using:OracleTools2026.ViewModels.UserDetails">
+
+    <views:ToolPage.Resources>
+        <MenuFlyout x:Key="NodeMenu" Opening="NodeMenu_Opening" />
+    </views:ToolPage.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="24,16,16,0" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind ViewModel.ToolTitle}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ServerInfo, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Conectar no Active Directory" Command="{x:Bind ViewModel.ConnectDirectoryCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE902;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Informações do banco" Command="{x:Bind ViewModel.ShowServerInfoCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE946;" /></AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <SelectorBar x:Name="SectionSelector" Grid.Row="1" Margin="16,0,24,4" SelectionChanged="SectionSelector_SelectionChanged">
+            <SelectorBarItem x:Name="PermissionsSection" Text="Permissões no banco" IsSelected="True">
+                <SelectorBarItem.Icon><FontIcon Glyph="&#xE8D7;" /></SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem x:Name="LocateSection" Text="Localizar usuário">
+                <SelectorBarItem.Icon><FontIcon Glyph="&#xE721;" /></SelectorBarItem.Icon>
+            </SelectorBarItem>
+        </SelectorBar>
+
+        <InfoBar Grid.Row="2" Margin="24,0,24,8"
+                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                 Severity="{x:Bind ui:BindingHelpers.Severity(ViewModel.NoticeKind), Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}" />
+
+        <!-- Permissões no banco -->
+        <Grid x:Name="PermissionsPanel" Grid.Row="3" Margin="24,0,24,12" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Style="{StaticResource CardPanelStyle}">
+                <ContentControl IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" HorizontalContentAlignment="Stretch">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="UserBox" Header="Usuário" CharacterCasing="Upper"
+                                 Text="{x:Bind ViewModel.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 KeyDown="UserBox_KeyDown" />
+                        <Button Grid.Column="1" VerticalAlignment="Bottom" Style="{StaticResource AccentButtonStyle}"
+                                Command="{x:Bind ViewModel.SearchUserCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE721;" FontSize="14" />
+                                <TextBlock Text="Pesquisar" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="3" VerticalAlignment="Bottom" Command="{x:Bind ViewModel.ExpandAllCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8A9;" FontSize="14" />
+                                <TextBlock Text="Expandir tudo" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="4" VerticalAlignment="Bottom" Command="{x:Bind ViewModel.GenerateReportCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE9F9;" FontSize="14" />
+                                <TextBlock Text="Gerar relatório" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="5" VerticalAlignment="Bottom" Command="{x:Bind ViewModel.ExtractUserScriptCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="14" />
+                                <TextBlock Text="Extrair script do usuário" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </ContentControl>
+            </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardPanelStyle}" Padding="4">
+                <TreeView x:Name="UserTree" SelectionMode="Single"
+                          ItemsSource="{x:Bind ViewModel.RootNodes}"
+                          Expanding="UserTree_Expanding"
+                          SelectionChanged="UserTree_SelectionChanged">
+                    <TreeView.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="C" Invoked="CopyAccelerator_Invoked" />
+                    </TreeView.KeyboardAccelerators>
+                    <TreeView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:UserTreeNode">
+                            <TreeViewItem ItemsSource="{x:Bind Children}"
+                                          IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                                          HasUnrealizedChildren="{x:Bind IsLazy, Mode=OneWay}"
+                                          ContextFlyout="{StaticResource NodeMenu}">
+                                <TextBlock Text="{x:Bind Text}" Opacity="{x:Bind local:UserDetailsPage.NodeOpacity(IsMuted)}"
+                                           IsTextSelectionEnabled="False" />
+                            </TreeViewItem>
+                        </DataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+        </Grid>
+
+        <!-- Localizar usuário (Active Directory e banco) -->
+        <Grid x:Name="LocatePanel" Grid.Row="3" Margin="24,0,24,12" RowSpacing="8" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Style="{StaticResource CardPanelStyle}">
+                <ContentControl IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" HorizontalContentAlignment="Stretch">
+                    <Grid ColumnSpacing="16" RowSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBox Header="Nome ou login" PlaceholderText="use * ou % como curinga"
+                                 Text="{x:Bind ViewModel.LocatePattern, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 KeyDown="LocateBox_KeyDown" />
+                        <CheckBox Grid.Column="1" VerticalAlignment="Bottom" Content="Active Directory"
+                                  IsChecked="{x:Bind ViewModel.SearchDirectory, Mode=TwoWay}" />
+                        <CheckBox Grid.Column="2" VerticalAlignment="Bottom" Content="Banco de dados"
+                                  IsChecked="{x:Bind ViewModel.SearchDatabase, Mode=TwoWay}" />
+                        <Button Grid.Column="3" VerticalAlignment="Bottom" Style="{StaticResource AccentButtonStyle}"
+                                Command="{x:Bind ViewModel.LocateUserCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE721;" FontSize="14" />
+                                <TextBlock Text="Localizar" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Text="{x:Bind ViewModel.DirectoryText, Mode=OneWay}" />
+                    </Grid>
+                </ContentControl>
+            </Border>
+            <TextBox Grid.Row="1" Style="{StaticResource MonospaceTextBoxStyle}" IsReadOnly="True"
+                     Text="{x:Bind ViewModel.LocateReport, Mode=OneWay}" />
+        </Grid>
+
+        <controls:ToolStatusBar Grid.Row="4" ViewModel="{x:Bind ViewModel}" />
+    </Grid>
+</views:ToolPage>

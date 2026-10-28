@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<views:ToolPage
+    x:Class="OracleTools2026.Views.Tools.SessionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:OracleTools2026.Views"
+    xmlns:controls="using:OracleTools2026.Controls"
+    xmlns:ui="using:OracleTools2026.UI"
+    xmlns:vm="using:OracleTools2026.ViewModels.Sessions"
+    xmlns:tv="using:WinUI.TableView">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho: ferramenta, banco conectado e comandos -->
+        <Grid Padding="24,16,16,8" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind ViewModel.ToolTitle}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ServerInfo, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Label="Atualizar" Command="{x:Bind ViewModel.RefreshCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE72C;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Matar sessões" Command="{x:Bind ViewModel.KillCommand}"
+                              ToolTipService.ToolTip="Mata as sessões marcadas e/ou selecionadas (Delete)">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE711;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Informações do banco" Command="{x:Bind ViewModel.ShowServerInfoCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE946;" /></AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <InfoBar Grid.Row="1" Margin="24,0,24,8"
+                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                 Severity="{x:Bind ui:BindingHelpers.Severity(ViewModel.NoticeKind), Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}" />
+
+        <Grid Grid.Row="2" Margin="24,0,24,8" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Content="Marcar todas" IsThreeState="False"
+                      IsChecked="{x:Bind ViewModel.Sessions.AllChecked, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind ViewModel.CountText, Mode=OneWay}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Style="{StaticResource LegendSwatchStyle}" Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1" />
+                <TextBlock Text="Usuário do banco e do SO de pessoas diferentes" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <tv:TableView x:Name="SessionsTable" Grid.Row="3" Margin="24,0,24,12"
+                      Style="{StaticResource ToolTableViewStyle}"
+                      ItemsSource="{x:Bind ViewModel.Sessions.Items}">
+            <tv:TableView.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Delete" Invoked="DeleteAccelerator_Invoked" />
+            </tv:TableView.KeyboardAccelerators>
+            <tv:TableView.RowContextFlyout>
+                <MenuFlyout />
+            </tv:TableView.RowContextFlyout>
+            <tv:TableView.ConditionalCellStyles>
+                <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsDifferentPerson}" Style="{StaticResource HighlightedCellStyle}" />
+            </tv:TableView.ConditionalCellStyles>
+            <tv:TableView.Columns>
+                <tv:TableViewTemplateColumn Header="" Width="48" CanSort="False" CanFilter="False" CanResize="False">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:SessionItem">
+                            <CheckBox IsChecked="{x:Bind IsChecked, Mode=TwoWay}" MinWidth="0" Padding="0" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTextColumn Header="INST_ID" Binding="{Binding InstanceId}" />
+                <tv:TableViewTextColumn Header="SID" Binding="{Binding Sid}" />
+                <tv:TableViewTextColumn Header="SERIAL#" Binding="{Binding SerialNumber}" />
+                <tv:TableViewTextColumn Header="USERNAME" Binding="{Binding UserName}" />
+                <tv:TableViewTextColumn Header="NOME_USERNAME" Binding="{Binding UserRealName}" />
+                <tv:TableViewTextColumn Header="OSUSER" Binding="{Binding OsUser}" />
+                <tv:TableViewTextColumn Header="NOME_OSUSER" Binding="{Binding OsUserRealName}" />
+                <tv:TableViewTextColumn Header="MACHINE" Binding="{Binding Machine}" />
+                <tv:TableViewTextColumn Header="STATUS" Binding="{Binding Status}" />
+                <tv:TableViewTextColumn Header="PROGRAM" Binding="{Binding Program}" />
+                <tv:TableViewTextColumn Header="TYPE" Binding="{Binding Type}" />
+                <tv:TableViewTextColumn Header="MODULE" Binding="{Binding Module}" />
+                <tv:TableViewTextColumn Header="LOGON_TIME" Binding="{Binding LogonTimeText}" SortMemberPath="LogonTime" />
+                <tv:TableViewTextColumn Header="STATE" Binding="{Binding State}" />
+            </tv:TableView.Columns>
+        </tv:TableView>
+
+        <controls:ToolStatusBar Grid.Row="4" ViewModel="{x:Bind ViewModel}" />
+    </Grid>
+</views:ToolPage>

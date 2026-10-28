@@ -1,4 +1,7 @@
 <Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
@@ -6,5 +9,10 @@
     <File Path="README.md" />
     <File Path="Release.cmd" />
   </Folder>
-  <Project Path="OracleTools2026/OracleTools2026.csproj" />
+  <Project Path="OracleTools2026.Core/OracleTools2026.Core.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="OracleTools2026/OracleTools2026.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>

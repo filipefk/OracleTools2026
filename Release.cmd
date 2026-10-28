@@ -2,7 +2,7 @@
 setlocal
 
 REM 1. Build completo da solução em modo Release
-dotnet build OracleTools2026.slnx -c Release
+dotnet build OracleTools2026.slnx -c Release -p:Platform=x64
 if errorlevel 1 (
     echo Erro ao compilar a solução.
 	pause
