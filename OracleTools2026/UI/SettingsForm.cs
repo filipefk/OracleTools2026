@@ -23,7 +23,9 @@ public partial class SettingsForm : Form
     {
         foreach (var name in _settings.GetNames())
         {
-            var index = settingsGrid.Rows.Add(name, SettingNames.GetFriendlyName(name), _settings.GetValue(name));
+            if (_settings.GetValue(name) is null)
+                continue;
+            var index = settingsGrid.Rows.Add(name, SettingNames.GetFriendlyName(name), _settings.GetValue(name)!);
             if (ReadOnlySettings.Contains(name))
             {
                 var row = settingsGrid.Rows[index];
