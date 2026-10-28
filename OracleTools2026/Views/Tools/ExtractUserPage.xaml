@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<views:ToolPage
+    x:Class="OracleTools2026.Views.Tools.ExtractUserPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:OracleTools2026.Views"
+    xmlns:controls="using:OracleTools2026.Controls"
+    xmlns:ui="using:OracleTools2026.UI"
+    xmlns:vm="using:OracleTools2026.ViewModels.ExtractUser"
+    xmlns:tv="using:WinUI.TableView">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="24,16,16,8" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind ViewModel.ToolTitle}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ServerInfo, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Label="Listar" Command="{x:Bind ViewModel.SearchCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE721;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Extrair script" Command="{x:Bind ViewModel.ExtractCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE896;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="Detalhes do usuário" Click="UserDetailsButton_Click"
+                              ToolTipService.ToolTip="Abre os detalhes (permissões) do usuário selecionado (Ctrl+D)">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE779;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="D" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
+                    <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton Label="Informações do banco" Command="{x:Bind ViewModel.ShowServerInfoCommand}">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE946;" /></AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+        </Grid>
+
+        <InfoBar Grid.Row="1" Margin="24,0,24,8"
+                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                 Severity="{x:Bind ui:BindingHelpers.Severity(ViewModel.NoticeKind), Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}" />
+
+        <!-- Filtros -->
+        <Border Grid.Row="2" Margin="24,0,24,8" Style="{StaticResource CardPanelStyle}">
+            <ContentControl IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" HorizontalContentAlignment="Stretch">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Header="Owner" HorizontalAlignment="Stretch"
+                              ItemsSource="{x:Bind ViewModel.OwnerFilterOptions}"
+                              SelectedIndex="{x:Bind ViewModel.OwnerFilterIndex, Mode=TwoWay}" />
+                    <ComboBox Grid.Column="1" Header="Profile" HorizontalAlignment="Stretch"
+                              ItemsSource="{x:Bind ViewModel.Profiles}"
+                              SelectedItem="{x:Bind ViewModel.SelectedProfile, Mode=TwoWay}"
+                              DropDownOpened="ProfileComboBox_DropDownOpened" />
+                    <TextBox Grid.Column="2" Header="Nome" PlaceholderText="parte do nome" CharacterCasing="Upper"
+                             Text="{x:Bind ViewModel.NameFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             KeyDown="FilterTextBox_KeyDown" />
+                    <TextBox Grid.Column="3" Header="Filtro SQL" PlaceholderText="condição extra, sem WHERE nem o primeiro AND"
+                             FontFamily="{StaticResource MonospaceFontFamily}"
+                             Text="{x:Bind ViewModel.CustomFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             KeyDown="FilterTextBox_KeyDown" />
+                </Grid>
+            </ContentControl>
+        </Border>
+
+        <!-- Lista de usuários e lista digitada -->
+        <Grid Grid.Row="3" Margin="24,0,24,8" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="260" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,6">
+                <CheckBox Content="Selecionar todos" IsThreeState="False"
+                          IsChecked="{x:Bind ViewModel.Users.AllChecked, Mode=TwoWay}"
+                          IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+                <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.CountText, Mode=OneWay}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <tv:TableView x:Name="UsersTable" Grid.Row="1"
+                          Style="{StaticResource ToolTableViewStyle}"
+                          ItemsSource="{x:Bind ViewModel.Users.Items}">
+                <tv:TableView.RowContextFlyout>
+                    <MenuFlyout />
+                </tv:TableView.RowContextFlyout>
+                <tv:TableView.ConditionalCellStyles>
+                    <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsLocked}" Style="{StaticResource MutedCellStyle}" />
+                </tv:TableView.ConditionalCellStyles>
+                <tv:TableView.Columns>
+                    <tv:TableViewTemplateColumn Header="" Width="48" CanSort="False" CanFilter="False" CanResize="False">
+                        <tv:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="vm:DatabaseUserItem">
+                                <CheckBox IsChecked="{x:Bind IsChecked, Mode=TwoWay}" MinWidth="0" Padding="0" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </tv:TableViewTemplateColumn.CellTemplate>
+                    </tv:TableViewTemplateColumn>
+                    <tv:TableViewTextColumn Header="Nome" Binding="{Binding Name}" />
+                    <tv:TableViewTextColumn Header="Criação" Binding="{Binding CreatedAtText}" SortMemberPath="CreatedAt" />
+                    <tv:TableViewTextColumn Header="Profile" Binding="{Binding Profile}" />
+                    <tv:TableViewTextColumn Header="Status" Binding="{Binding Status}" />
+                    <tv:TableViewTextColumn Header="Data de lock" Binding="{Binding LockDateText}" SortMemberPath="LockDate" />
+                    <tv:TableViewTextColumn Header="Data de expiração" Binding="{Binding ExpiryDateText}" SortMemberPath="ExpiryDate" />
+                    <tv:TableViewTextColumn Header="Último login" Binding="{Binding LastLoginText}" SortMemberPath="LastLogin" />
+                </tv:TableView.Columns>
+            </tv:TableView>
+
+            <TextBlock Grid.Column="1" Text="Lista de usuários (um por linha)" Margin="0,0,0,6" VerticalAlignment="Bottom" />
+            <TextBox Grid.Column="1" Grid.Row="1" Style="{StaticResource MonospaceTextBoxStyle}" CharacterCasing="Upper"
+                     Text="{x:Bind ViewModel.ManualList, Mode=TwoWay}"
+                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+        </Grid>
+
+        <!-- Opções de extração -->
+        <Border Grid.Row="4" Margin="24,0,24,12" Style="{StaticResource CardPanelStyle}">
+            <ContentControl IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" HorizontalContentAlignment="Stretch">
+                <Grid ColumnSpacing="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButtons Header="Extrair de" SelectedIndex="{x:Bind ViewModel.SourceIndex, Mode=TwoWay}">
+                        <x:String>Usuários marcados</x:String>
+                        <x:String>Toda a lista</x:String>
+                        <x:String>Lista digitada</x:String>
+                    </RadioButtons>
+                    <RadioButtons Grid.Column="1" Header="Destino" SelectedIndex="{x:Bind ViewModel.DestinationIndex, Mode=TwoWay}">
+                        <x:String>Arquivos na pasta</x:String>
+                        <x:String>Área de transferência</x:String>
+                        <x:String>Editor de texto</x:String>
+                    </RadioButtons>
+                    <StackPanel Grid.Column="2" Spacing="6">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Header="Pasta" Text="{x:Bind ViewModel.OutputFolder, Mode=TwoWay}"
+                                     IsEnabled="{x:Bind ViewModel.IsFileDestination, Mode=OneWay}" />
+                            <Button Grid.Column="1" VerticalAlignment="Bottom" Command="{x:Bind ViewModel.BrowseFolderCommand}"
+                                    IsEnabled="{x:Bind ViewModel.IsFileDestination, Mode=OneWay}"
+                                    ToolTipService.ToolTip="Escolher a pasta">
+                                <FontIcon Glyph="&#xED25;" FontSize="16" />
+                            </Button>
+                        </Grid>
+                        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Text="Os scripts são gravados em USUARIOS\NOME.sql dentro da pasta." />
+                    </StackPanel>
+                </Grid>
+            </ContentControl>
+        </Border>
+
+        <controls:ToolStatusBar Grid.Row="5" ViewModel="{x:Bind ViewModel}" />
+    </Grid>
+</views:ToolPage>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="OracleTools2026.Views.Dialogs.LoginDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="using:OracleTools2026.UI"
+    Title="Conectar no Oracle"
+    PrimaryButtonText="Conectar"
+    CloseButtonText="Cancelar"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    Opened="ContentDialog_Opened">
+
+    <ContentDialog.Resources>
+        <Flyout x:Name="ConfirmRemoveFlyout" Placement="Bottom">
+            <StackPanel Spacing="12" MaxWidth="320">
+                <TextBlock x:Name="ConfirmRemoveText" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button Content="Apagar" Style="{StaticResource AccentButtonStyle}" Click="ConfirmRemoveButton_Click" />
+                    <Button Content="Cancelar" Click="CancelRemoveButton_Click" />
+                </StackPanel>
+            </StackPanel>
+        </Flyout>
+    </ContentDialog.Resources>
+
+    <StackPanel Spacing="12" MinWidth="440">
+        <InfoBar Severity="Error" IsClosable="False"
+                 IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+        <TextBox x:Name="UserBox" Header="Usuário" CharacterCasing="Upper"
+                 Text="{x:Bind ViewModel.User, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+
+        <PasswordBox x:Name="PasswordInput" Header="Senha"
+                     Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
+                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+
+        <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox x:Name="DataSourceBox" Header="Banco (alias do tnsnames.ora)"
+                            Text="{x:Bind ViewModel.DataSource, Mode=TwoWay}"
+                            IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+                            TextChanged="DataSourceBox_TextChanged"
+                            SuggestionChosen="DataSourceBox_SuggestionChosen"
+                            GotFocus="DataSourceBox_GotFocus" />
+            <Button Grid.Column="1" VerticalAlignment="Bottom" Click="TnsNamesButton_Click"
+                    IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+                    ToolTipService.ToolTip="Selecionar o arquivo tnsnames.ora">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xE8E5;" FontSize="14" />
+                    <TextBlock Text="tnsnames.ora" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Content="Salvar conexão" IsChecked="{x:Bind ViewModel.SaveConnection, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+            <CheckBox Grid.Column="1" Content="Salvar senha" IsChecked="{x:Bind ViewModel.SavePassword, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.SaveConnection, Mode=OneWay}" />
+            <DropDownButton x:Name="SavedConnectionsButton" Grid.Column="2" HorizontalAlignment="Right"
+                            Content="Conexões salvas" IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}">
+                <DropDownButton.Flyout>
+                    <MenuFlyout x:Name="SavedConnectionsMenu" Placement="BottomEdgeAlignedRight" Opening="SavedConnectionsMenu_Opening" />
+                </DropDownButton.Flyout>
+            </DropDownButton>
+        </Grid>
+
+        <TextBox Header="Apelido da conexão salva"
+                 PlaceholderText="{x:Bind ViewModel.DefaultAlias, Mode=OneWay}"
+                 Text="{x:Bind ViewModel.Alias, Mode=TwoWay}"
+                 Visibility="{x:Bind ViewModel.SaveConnection, Mode=OneWay}" />
+
+        <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsConnecting, Mode=OneWay}" />
+    </StackPanel>
+</ContentDialog>

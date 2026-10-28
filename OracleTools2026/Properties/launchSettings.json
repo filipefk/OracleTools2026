@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "OracleTools2026": {
+      "commandName": "Project"
+    },
+    "Sessões (linha de comando)": {
+      "commandName": "Project",
+      "commandLineArgs": "SESSOES"
+    }
+  }
+}

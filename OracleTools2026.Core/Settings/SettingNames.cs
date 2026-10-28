@@ -1,0 +1,44 @@
+namespace OracleTools2026.Settings;
+
+public static class SettingNames
+{
+    public const string TnsNamesPath = "CaminhoTnsNames";
+    public const string LastLoginUser = "UltimoLoginUsuario";
+    public const string LastLoginDataSource = "UltimoLoginDatabase";
+    public const string DefaultOutputFolder = "PastaPadraoSalvarArquivos";
+    public const string IncludeHeaderOnDdlExtraction = "ColocarCabecalhoAoExtrairDDL";
+    public const string InlineCompileErrorsOnDdlExtraction = "ColocarMensagemErroNaLinhaAoExtrairDDL";
+    public const string SavedOracleConnections = "ConexoesORACLE";
+    public const string SavedDirectoryConnections = "ConexoesAD";
+    public const string UserSearchFilter = "FiltroPesquisaUsuarios";
+
+    private static readonly Dictionary<string, string> FriendlyNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [TnsNamesPath] = "Caminho do tnsnames.ora",
+        [LastLoginUser] = "Último usuário logado",
+        [LastLoginDataSource] = "Último banco logado",
+        [DefaultOutputFolder] = "Pasta padrão para salvar arquivos ao extrair DDL",
+        [IncludeHeaderOnDdlExtraction] = "Colocar cabeçalho ao extrair DDL",
+        [InlineCompileErrorsOnDdlExtraction] = "Colocar mensagem de erro na linha ao extrair DDL",
+        [SavedOracleConnections] = "Conexões de banco ORACLE salvas encriptadas",
+        [SavedDirectoryConnections] = "Conexões do Active Directory salvas encriptadas",
+        [UserSearchFilter] = "Filtro SQL padrão para pesquisa de usuários",
+        ["ConexoesFTPSalvas"] = "Conexões FTP salvas encriptadas",
+        ["ConexoesSVNSalvas"] = "Conexões SVN salvas encriptadas",
+        ["CaminhoExeTortoiseSVN"] = "Caminho do executável do Tortoise SVN",
+        ["PastaImagensRelatoriosHtml"] = "Pasta de imagens para relatórios HTML",
+        ["CaminhoListagemTrunk"] = "Caminho do arquivo de listagem do Trunk",
+        ["CaminhoListagemBranches"] = "Caminho do arquivo de listagem dos branches"
+    };
+
+    private static readonly HashSet<string> Flags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        IncludeHeaderOnDdlExtraction,
+        InlineCompileErrorsOnDdlExtraction
+    };
+
+    public static bool IsFlag(string name) => Flags.Contains(name);
+
+    public static string GetFriendlyName(string name) =>
+        FriendlyNames.TryGetValue(name, out var friendlyName) ? friendlyName : name;
+}
