@@ -18,7 +18,7 @@ public sealed partial class ExtractDdlPage : ToolPage
         InitializeComponent();
         TableViewHelper.Attach(ObjectsTable, ViewModel.Objects);
         ObjectsTable.RowContextFlyoutOpening += ObjectsTable_RowContextFlyoutOpening;
-        ObjectsTable.RowDoubleTapped += (_, e) => ViewModel.OpenDdlCommand.Execute(e.Item as DatabaseObjectItem);
+        ObjectsTable.CellDoubleTapped += ObjectsTable_CellDoubleTapped;
     }
 
     public ExtractDdlViewModel ViewModel { get; }
@@ -74,6 +74,17 @@ public sealed partial class ExtractDdlPage : ToolPage
             .Where(o => filter.Length == 0 || o.StartsWith(filter, StringComparison.OrdinalIgnoreCase))
             .ToList();
         OwnerBox.IsSuggestionListOpen = ViewModel.Owners.Count > 1;
+    }
+
+    // Usa o evento da célula: com a tabela somente leitura, a célula marca o duplo clique como
+    // tratado e o RowDoubleTapped nunca dispara. A coluna do checkbox fica de fora.
+    private void ObjectsTable_CellDoubleTapped(object? sender, TableViewCellDoubleTappedEventArgs e)
+    {
+        if (e.Cell.Column is not TableViewTemplateColumn && e.Item is DatabaseObjectItem item && ViewModel.IsIdle)
+        {
+            e.Handled = true;
+            ViewModel.OpenDdlCommand.Execute(item);
+        }
     }
 
     private void ObjectsTable_RowContextFlyoutOpening(object? sender, TableViewRowContextFlyoutEventArgs e)

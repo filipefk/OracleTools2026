@@ -166,7 +166,7 @@ public sealed partial class MainWindow : Window
     private void UpdateConnectionText()
     {
         var connected = _session.Current is { IsComplete: true };
-        ConnectionText.Text = connected ? $"{_session.Current!.User}@{_session.Current.DataSource}" : "Não conectado";
+        ConnectionText.Text = connected ? _session.Current!.DisplayName : "Não conectado";
         ConnectionIcon.Glyph = connected ? "\uE703" : "\uE7BA";
     }
 

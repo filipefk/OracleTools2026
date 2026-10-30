@@ -21,7 +21,7 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
     public async Task<string> GetServerInfoAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await session.OpenConnectionAsync(cancellationToken);
-        return await GetServerInfoAsync(connection, session.Current!.DataSource, cancellationToken);
+        return await GetServerInfoAsync(connection, session.Current!.DataSourceDisplay, cancellationToken);
     }
 
     internal static async Task<string> GetServerInfoAsync(OracleConnection connection, string dataSource, CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
         }
 
         return $"{reader.GetString(0)} - Host: {reader.GetStringOrEmpty(1)} - Instance: {reader.GetStringOrEmpty(2)} " +
-               $"- User: {reader.GetStringOrEmpty(3)} - Alias: {dataSource.ToUpperInvariant()}";
+               $"- User: {reader.GetStringOrEmpty(3)} - Alias: {dataSource}";
     }
 
     public async Task<IReadOnlyList<DatabaseProperty>> GetDatabaseDetailsAsync(CancellationToken cancellationToken = default)
@@ -172,7 +172,11 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
             Add(sessionGroup, "Fuso horário", sessionInfo[6]);
         }
 
-        Add(sessionGroup, "Alias TNS", session.Current!.DataSource.ToUpperInvariant());
+        Add(sessionGroup, "Banco", session.Current!.DataSourceDisplay);
+        if (session.Current.Privilege != DbaPrivilege.Normal)
+        {
+            Add(sessionGroup, "Privilégio", ConnectionInfo.PrivilegeName(session.Current.Privilege));
+        }
 
         Add(clientGroup, "Versão do servidor (driver)", connection.ServerVersion);
         Add(clientGroup, "Oracle.ManagedDataAccess", typeof(OracleConnection).Assembly.GetName().Version?.ToString());
@@ -227,7 +231,13 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
     {
         var where = new StringBuilder($"OBJECT_TYPE IN ({ToSqlList(SupportedTypes.Concat(["PACKAGE BODY", "TYPE BODY"]))})");
         var parameters = new List<(string, object?)>();
+        AppendFilters(where, parameters, owner, type, name);
 
+        return await QueryObjectsAsync(where.ToString(), having: null, orderBy: "OWNER, OBJECT_TYPE, OBJECT_NAME", parameters, cancellationToken);
+    }
+
+    private static void AppendFilters(StringBuilder where, List<(string, object?)> parameters, string? owner, string? type, string? name)
+    {
         if (!string.IsNullOrWhiteSpace(owner))
         {
             where.Append(" AND OWNER = :owner");
@@ -245,8 +255,6 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
             where.Append(" AND UPPER(OBJECT_NAME) LIKE '%' || :objectName || '%'");
             parameters.Add(("objectName", name.Trim().ToUpperInvariant()));
         }
-
-        return await QueryObjectsAsync(where.ToString(), having: null, orderBy: "OWNER, OBJECT_TYPE, OBJECT_NAME", parameters, cancellationToken);
     }
 
     public async Task<IReadOnlyList<DatabaseObject>> GetRecentlyCompiledAsync(int days, CancellationToken cancellationToken = default)
@@ -257,12 +265,14 @@ public sealed class DatabaseObjectRepository(IOracleSession session)
         return await QueryObjectsAsync(where, having, "LAST_DDL_TIME DESC, OWNER, OBJECT_NAME", [("days", days)], cancellationToken);
     }
 
-    public async Task<IReadOnlyList<DatabaseObject>> GetInvalidAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DatabaseObject>> GetInvalidAsync(string? owner, string? type, string? name, CancellationToken cancellationToken = default)
     {
-        const string where = "1 = 1";
+        var where = new StringBuilder("1 = 1");
+        var parameters = new List<(string, object?)>();
+        AppendFilters(where, parameters, owner, type, name);
         const string having = "MAX(CASE WHEN STATUS <> 'VALID' THEN 1 ELSE 0 END) = 1";
 
-        return await QueryObjectsAsync(where, having, "LAST_DDL_TIME DESC, OWNER, OBJECT_NAME", [], cancellationToken);
+        return await QueryObjectsAsync(where.ToString(), having, "LAST_DDL_TIME DESC, OWNER, OBJECT_NAME", parameters, cancellationToken);
     }
 
     private async Task<IReadOnlyList<DatabaseObject>> QueryObjectsAsync(

@@ -15,7 +15,7 @@ public sealed partial class SchedulerJobsPage : ToolPage
         InitializeComponent();
         TableViewHelper.Attach(JobsTable, ViewModel.Jobs);
         JobsTable.RowContextFlyoutOpening += JobsTable_RowContextFlyoutOpening;
-        JobsTable.RowDoubleTapped += (_, e) => ViewModel.OpenActionCommand.Execute(e.Item as SchedulerJobItem);
+        JobsTable.CellDoubleTapped += JobsTable_CellDoubleTapped;
     }
 
     public SchedulerJobsViewModel ViewModel { get; }
@@ -30,6 +30,17 @@ public sealed partial class SchedulerJobsPage : ToolPage
 
     private static Predicate<TableViewConditionalCellStyleContext> HasHealth(SchedulerJobHealth health) =>
         context => context.DataItem is SchedulerJobItem item && item.Health == health;
+
+    // Usa o evento da célula: com a tabela somente leitura, a célula marca o duplo clique como
+    // tratado e o RowDoubleTapped nunca dispara.
+    private void JobsTable_CellDoubleTapped(object? sender, TableViewCellDoubleTappedEventArgs e)
+    {
+        if (e.Item is SchedulerJobItem job && ViewModel.IsIdle)
+        {
+            e.Handled = true;
+            ViewModel.OpenActionCommand.Execute(job);
+        }
+    }
 
     private void JobsTable_RowContextFlyoutOpening(object? sender, TableViewRowContextFlyoutEventArgs e)
     {

@@ -68,7 +68,8 @@ public partial class App : Application
             return null;
         }
 
-        var connection = new ConnectionInfo(args[1].Trim(), args[2].Trim(), args[3].Trim());
+        var (user, privilege) = ConnectionInfo.SplitUser(args[1]);
+        var connection = new ConnectionInfo(user, args[2].Trim(), args[3].Trim(), privilege);
         if (!connection.IsComplete)
         {
             return null;
@@ -81,7 +82,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            return $"Não foi possível conectar em {connection.User}@{connection.DataSource}:\n{ex.Message}";
+            return $"Não foi possível conectar em {connection.DisplayName}:\n{ex.Message}";
         }
     }
 

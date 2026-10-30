@@ -16,10 +16,14 @@ OutputBaseFilename=OracleTools2026-2.0.0
 Compression=lzma
 SolidCompression=yes
 DisableProgramGroupPage=yes
+; Os scripts de lock vão para o %APPDATA% do usuário que executa a instalação (intencional)
+UsedUserAreasWarning=no
 
 [Files]
 ; Copia todos os arquivos da pasta Release (inclui as dependências NuGet e o Windows App SDK) para a pasta de instalação
 Source: "..\bin\Release\net10.0-windows10.0.26100.0\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Scripts do Monitor de Locks em %APPDATA%\OracleTools2026; não sobrescreve versões editadas pelo usuário e não remove na desinstalação
+Source: "AppData\*"; DestDir: "{userappdata}\OracleTools2026"; Flags: onlyifdoesntexist uninsneveruninstall
 
 [Icons]
 Name: "{group}\Oracle Tools"; Filename: "{app}\OracleTools2026.exe"

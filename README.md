@@ -97,7 +97,7 @@ Extensões dos arquivos gerados:
 - A busca no SVN do original não foi migrada (o projeto não terá vínculo com SVN).
 
 ### Procurar lock de banco (`LockMonitorPage`)
-- Executa periodicamente `ScriptLock01.sql` (botão Script 1) ou `ScriptLock02.sql` (Script 2) e mostra o resultado; o script é relido a cada início.
+- Executa periodicamente `ScriptLock01.sql` (botão Script 1) ou `ScriptLock02.sql` (Script 2) e mostra o resultado; o script é relido a cada início. O botão **Pasta dos scripts** abre `%APPDATA%\OracleTools2026` no Explorer.
 - Intervalo configurável na tela (padrão de 5 segundos, como no original).
 - Com **Avisar caso encontre lock** marcado, traz a janela para frente e emite um aviso sonoro quando o script retorna linhas.
 - Um erro na verificação aparece na barra de avisos, sem interromper o monitoramento (no original, a mensagem modal parava as verificações até ser fechada).
@@ -120,7 +120,7 @@ Extensões dos arquivos gerados:
 - Cada link é fechado após o teste, evitando o erro de limite de links abertos (ORA-02020) ao testar muitos de uma vez.
 
 ### Arquivos auxiliares
-Os arquivos `ScriptLock01.sql`, `ScriptLock02.sql`, `Lista_Usuarios2.txt` e `ListaNomesAd.txt` são procurados primeiro em `%APPDATA%\OracleTools2026` e depois na pasta do executável. Como a pasta de instalação não tem permissão de escrita, o `ListaNomesAd.txt` é sempre gravado em `%APPDATA%\OracleTools2026`.
+Os arquivos `ScriptLock01.sql`, `ScriptLock02.sql`, `Lista_Usuarios2.txt` e `ListaNomesAd.txt` são procurados primeiro em `%APPDATA%\OracleTools2026` e depois na pasta do executável. Como a pasta de instalação não tem permissão de escrita, o `ListaNomesAd.txt` é sempre gravado em `%APPDATA%\OracleTools2026`. O instalador copia `ScriptLock01.sql` e `ScriptLock02.sql` (fontes em `OracleTools2026\Instalador\AppData\`) para `%APPDATA%\OracleTools2026` do usuário que executa a instalação, sem sobrescrever versões já existentes.
 
 ### Ainda não migradas
 Detalhes de role, controle de concorrência, backups de objetos, alerta baseado em consulta, agendamento de scripts.
@@ -145,7 +145,12 @@ Sem argumento ou com um argumento desconhecido, abre a janela principal. Com uma
 
 ## Conexão e preferências
 
-- A conexão usa os aliases do **`tnsnames.ora`**, cujo caminho o usuário seleciona na primeira vez (a pasta do arquivo é usada como `TNS_ADMIN` do driver).
+- O login tem três formas de informar o banco, nenhuma exige Oracle Client instalado:
+  - **Básico**: host, porta e service name ou SID (com SID o programa monta o descritor, pois o EZConnect não aceita SID).
+  - **TNS (tnsnames.ora)**: aliases do `tnsnames.ora`, cujo caminho o usuário seleciona na primeira vez (a pasta do arquivo é usada como `TNS_ADMIN` do driver).
+  - **EZConnect / Descritor**: `host:porta/serviço` (ex.: `localhost:1521/ORCLPDB1`) ou o descritor completo `(DESCRIPTION=(ADDRESS=...)(CONNECT_DATA=...))`, útil para RAC/failover.
+- **Conectar como** Normal, `SYSDBA` ou `SYSOPER` (ex.: `SYS` num banco local no Docker). Também é aceito `SYS AS SYSDBA` no campo usuário e na linha de comando (entre aspas).
+- Na linha de comando, o 4º argumento pode ser um alias TNS, um EZConnect ou um descritor.
 - As preferências ficam no registro em `HKEY_CURRENT_USER\Software\ORACLE_Tools\Parametros`, **as mesmas chaves do OracleTools original**: caminho do tnsnames, último login, pasta padrão de extração, opções de cabeçalho e de mensagens de erro, filtro SQL de usuários, conexões salvas do Oracle e do Active Directory (encriptadas, no mesmo formato do original).
 - As telas de usuários consultam as views `DBA_*` (`DBA_USERS`, `DBA_TS_QUOTAS`, `DBA_SYS_PRIVS`, `DBA_ROLE_PRIVS`, `DBA_TAB_PRIVS`, `DBA_COL_PRIVS`, `DBA_PROFILES`), o que exige `SELECT_CATALOG_ROLE` ou privilégio equivalente.
 - Os parâmetros podem ser editados em **Parâmetros**, no rodapé do menu lateral da janela principal (as conexões salvas, encriptadas, aparecem só para leitura).
@@ -154,7 +159,7 @@ Sem argumento ou com um argumento desconhecido, abre a janela principal. Com uma
 
 - Windows 10 (versão 2004 ou superior) ou Windows 11, x64.
 - .NET 10 Runtime x64 (o .NET 10 Desktop Runtime também serve, pois o inclui). O Windows App SDK vai junto com o programa.
-- Acesso de rede ao banco Oracle e um `tnsnames.ora` com os aliases.
+- Acesso de rede ao banco Oracle (o `tnsnames.ora` é opcional).
 
 ## Compilação
 

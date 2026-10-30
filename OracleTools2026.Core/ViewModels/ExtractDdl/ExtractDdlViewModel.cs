@@ -201,9 +201,12 @@ public sealed partial class ExtractDdlViewModel : ToolViewModelBase
 
     private async Task ListInvalidObjectsAsync()
     {
+        var owner = NullIfAll(Owner);
+        var type = NullIfAll(SelectedType);
+        var name = NameFilter;
         IReadOnlyList<DatabaseObject> objects = [];
         if (await RunAsync("Listando objetos inválidos", async (_, ct) =>
-                objects = await Task.Run(() => Services.Repository.GetInvalidAsync(ct), ct)))
+                objects = await Task.Run(() => Services.Repository.GetInvalidAsync(owner, type, name, ct), ct)))
         {
             ShowObjects(objects, "Nenhum objeto inválido.");
         }

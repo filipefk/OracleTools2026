@@ -17,7 +17,7 @@ public sealed partial class ExtractUserPage : ToolPage
         InitializeComponent();
         TableViewHelper.Attach(UsersTable, ViewModel.Users);
         UsersTable.RowContextFlyoutOpening += UsersTable_RowContextFlyoutOpening;
-        UsersTable.RowDoubleTapped += (_, e) => ViewModel.ViewScriptCommand.Execute(e.Item as DatabaseUserItem);
+        UsersTable.CellDoubleTapped += UsersTable_CellDoubleTapped;
     }
 
     public ExtractUserViewModel ViewModel { get; }
@@ -40,6 +40,17 @@ public sealed partial class ExtractUserPage : ToolPage
     private async void ProfileComboBox_DropDownOpened(object sender, object e) => await ViewModel.EnsureProfilesLoadedAsync();
 
     private void UserDetailsButton_Click(object sender, RoutedEventArgs e) => ViewModel.OpenUserDetailsCommand.Execute(null);
+
+    // Usa o evento da célula: com a tabela somente leitura, a célula marca o duplo clique como
+    // tratado e o RowDoubleTapped nunca dispara. A coluna do checkbox fica de fora.
+    private void UsersTable_CellDoubleTapped(object? sender, TableViewCellDoubleTappedEventArgs e)
+    {
+        if (e.Cell.Column is not TableViewTemplateColumn && e.Item is DatabaseUserItem user && ViewModel.IsIdle)
+        {
+            e.Handled = true;
+            ViewModel.ViewScriptCommand.Execute(user);
+        }
+    }
 
     private void UsersTable_RowContextFlyoutOpening(object? sender, TableViewRowContextFlyoutEventArgs e)
     {

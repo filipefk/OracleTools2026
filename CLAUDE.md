@@ -62,6 +62,7 @@ OracleTools2026/           # app WinUI 3 (não empacotado)
 
 - Preferências no registro em `HKCU\Software\ORACLE_Tools\Parametros`, **com os mesmos nomes de chave** (constantes em `Settings/SettingNames.cs`). Flags booleanas aceitam `1/0/TRUE/FALSE/SIM/NÃO` e são gravadas como `1`/`0`.
 - Conexões salvas (`ConexoesORACLE` e `ConexoesAD`): manter o formato e a ofuscação de `ObfuscatedRecordList` e a criptografia de `LegacyCipher` (AES-CBC, PBKDF2-SHA1 1000 iterações, mesmas chaves), para que as duas versões leiam os mesmos dados.
+- Login sem tnsnames.ora: o banco é sempre um texto no `Data Source` (alias TNS, EZConnect ou descritor; `ServerAddress` converte de/para host, porta e serviço/SID). O privilégio (`DbaPrivilege`) é gravado junto do usuário no formato do sqlplus (`SYS AS SYSDBA`, `ConnectionInfo.StoredUser`/`SplitUser`) nas conexões salvas e no último login, sem campo novo no registro.
 - Linha de comando: `<FERRAMENTA> [usuario senha alias_tns]`, com os mesmos nomes de ferramenta do original (`EXTRACT_DDL_SOURCE`, `EXTRACT_DDL_USER`, `DETALHES_USER`, `SESSOES`, `DBLINKS`, `JOBS_DE_BANCO`...).
 
 ## Build
@@ -76,5 +77,6 @@ OracleTools2026/           # app WinUI 3 (não empacotado)
 
 - Inno Setup (`iscc` no PATH), no mesmo modelo do projeto `D:\Fontes\MarkdownEditor`: `OracleTools2026\Instalador\Instalador.iss` e `Release.cmd` (raiz).
 - Build **framework-dependent do .NET** (requer o .NET 10 Runtime x64) com o Windows App SDK incluído, instalação somente x64 em `{commonpf}\OracleTools2026`, copiando tudo de `OracleTools2026\bin\Release\net10.0-windows10.0.26100.0\win-x64\` (a plataforma não entra no caminho: `AppendPlatformToOutputPath=false`). Não grava nada no registro (as preferências são do programa e compartilhadas com o original).
+- Arquivos de `OracleTools2026\Instalador\AppData\` (scripts `ScriptLock01.sql` e `ScriptLock02.sql`) são instalados em `{userappdata}\OracleTools2026` com `onlyifdoesntexist uninsneveruninstall` (preserva edições do usuário). Para distribuir outro arquivo auxiliar, basta colocá-lo nessa pasta.
 - Antes de gerar, atualizar a versão em `Instalador.iss` (`AppVersion` e `OutputBaseFilename` = `OracleTools2026-X.Y.Z`) no `.csproj` do app (`AssemblyVersion`, `FileVersion`, `InformationalVersion`) e no `app.manifest` (`assemblyIdentity version` = `X.Y.Z.0`).
 - `Release.cmd`: `dotnet build OracleTools2026.slnx -c Release -p:Platform=x64` → apaga o `OracleTools2026-*.exe` anterior → `iscc`. O `.exe` sai em `OracleTools2026\Instalador\` (ignorado no git).

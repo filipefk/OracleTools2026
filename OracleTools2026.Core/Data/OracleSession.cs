@@ -23,7 +23,7 @@ public sealed class OracleSession(IAppSettings settings) : IOracleSession
         await TestAsync(connection, cancellationToken);
 
         Current = connection;
-        settings.LastLoginUser = connection.User;
+        settings.LastLoginUser = connection.StoredUser;
         settings.LastLoginDataSource = connection.DataSource;
         ConnectionChanged?.Invoke(this, EventArgs.Empty);
     }

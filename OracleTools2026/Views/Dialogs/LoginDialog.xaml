@@ -24,7 +24,7 @@
         </Flyout>
     </ContentDialog.Resources>
 
-    <StackPanel Spacing="12" MinWidth="440">
+    <StackPanel Spacing="12" MinWidth="480">
         <InfoBar Severity="Error" IsClosable="False"
                  IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
                  Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
@@ -33,11 +33,31 @@
                  Text="{x:Bind ViewModel.User, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
 
-        <PasswordBox x:Name="PasswordInput" Header="Senha"
-                     Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
-                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
-
         <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <PasswordBox x:Name="PasswordInput" Header="Senha"
+                         Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
+                         IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+            <ComboBox Grid.Column="1" Header="Conectar como" MinWidth="130"
+                      SelectedIndex="{x:Bind ViewModel.PrivilegeIndex, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}">
+                <x:String>Normal</x:String>
+                <x:String>SYSDBA</x:String>
+                <x:String>SYSOPER</x:String>
+            </ComboBox>
+        </Grid>
+
+        <SelectorBar x:Name="ModeBar" SelectionChanged="ModeBar_SelectionChanged"
+                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}">
+            <SelectorBarItem Text="Básico" />
+            <SelectorBarItem Text="TNS (tnsnames.ora)" />
+            <SelectorBarItem Text="EZConnect / Descritor" />
+        </SelectorBar>
+
+        <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.IsTnsMode, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -56,6 +76,39 @@
                     <TextBlock Text="tnsnames.ora" />
                 </StackPanel>
             </Button>
+        </Grid>
+
+        <TextBox Header="Banco (EZConnect ou descritor)"
+                 Text="{x:Bind ViewModel.DirectDataSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+                 Visibility="{x:Bind ViewModel.IsDirectMode, Mode=OneWay}" />
+
+        <Grid ColumnSpacing="8" RowSpacing="12" Visibility="{x:Bind ViewModel.IsBasicMode, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBox Grid.ColumnSpan="2" Header="Host"
+                     Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+            <NumberBox Grid.Column="2" Header="Porta" MinWidth="110" Minimum="1" Maximum="65535"
+                       SpinButtonPlacementMode="Hidden"
+                       Value="{x:Bind ViewModel.Port, Mode=TwoWay}"
+                       IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+            <ComboBox Grid.Row="1" Header="Tipo" MinWidth="140"
+                      SelectedIndex="{x:Bind ViewModel.ServiceKindIndex, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}">
+                <x:String>Service name</x:String>
+                <x:String>SID</x:String>
+            </ComboBox>
+            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Header="Nome"
+                     Text="{x:Bind ViewModel.ServiceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
         </Grid>
 
         <Grid ColumnSpacing="16">

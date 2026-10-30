@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
@@ -19,6 +20,12 @@ public static class AppFiles
         SearchFolders.Select(folder => Path.Combine(folder, fileName)).FirstOrDefault(File.Exists);
 
     public static string GetUserDataPath(string fileName) => Path.Combine(UserDataFolder, fileName);
+
+    public static void OpenUserDataFolder()
+    {
+        Directory.CreateDirectory(UserDataFolder);
+        Process.Start(new ProcessStartInfo(UserDataFolder) { UseShellExecute = true });
+    }
 
     // O original gravava/lia em ANSI (Encoding.Default do .NET Framework); arquivos novos podem estar em UTF-8.
     public static async Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = default)

@@ -133,7 +133,7 @@ public sealed partial class DdlExtractor(IOracleSession session)
 
     private async Task<string> BuildHeaderAsync(OracleConnection connection, string owner, string name, ObjectInfo info, CancellationToken cancellationToken)
     {
-        var serverInfo = await DatabaseObjectRepository.GetServerInfoAsync(connection, session.Current!.DataSource, cancellationToken);
+        var serverInfo = await DatabaseObjectRepository.GetServerInfoAsync(connection, session.Current!.DataSourceDisplay, cancellationToken);
 
         var header = new StringBuilder()
             .Append("-- Fonte extraído pelo Oracle Tools\n")

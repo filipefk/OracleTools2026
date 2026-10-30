@@ -38,9 +38,17 @@
                        Text="Escolha uma ferramenta. Todas usam a mesma conexão; para usar outra ao mesmo tempo, abra uma nova instância (Ctrl+N). Clique com o botão direito em uma ferramenta do menu para abri-la em uma nova janela." />
 
             <InfoBar x:Name="ConnectionInfoBar" IsOpen="True" IsClosable="False" Margin="0,12,0,0">
-                <InfoBar.ActionButton>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
                     <Button Content="Conectar..." Click="ConnectButton_Click" />
-                </InfoBar.ActionButton>
+                    <Button x:Name="DatabaseInfoButton" Click="DatabaseInfoButton_Click"
+                            ToolTipService.ToolTip="Versão, instância, parâmetros e outras informações do banco conectado">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE946;" FontSize="14" />
+                            <TextBlock Text="Informações do banco de dados" />
+                        </StackPanel>
+                    </Button>
+                    <ProgressRing x:Name="DatabaseInfoProgress" IsActive="False" Width="20" Height="20" VerticalAlignment="Center" />
+                </StackPanel>
             </InfoBar>
 
             <ItemsControl x:Name="GroupsControl" Margin="0,8,0,0">

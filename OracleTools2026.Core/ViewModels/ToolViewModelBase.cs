@@ -181,7 +181,7 @@ public abstract partial class ToolViewModelBase : ObservableObject
             }
             catch (Exception)
             {
-                ServerInfo = $"{Session.Current?.User}@{Session.Current?.DataSource}";
+                ServerInfo = Session.Current?.DisplayName ?? "";
             }
         }
 

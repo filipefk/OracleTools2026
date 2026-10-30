@@ -17,9 +17,22 @@ public sealed partial class LoginDialog : ContentDialog
         _window = window;
         ViewModel = App.GetService<LoginViewModel>();
         InitializeComponent();
+        SyncModeBar();
     }
 
     public LoginViewModel ViewModel { get; }
+
+    // A ordem dos itens do SelectorBar é a mesma do enum ConnectionMode.
+    private void SyncModeBar() => ModeBar.SelectedItem = ModeBar.Items[(int)ViewModel.Mode];
+
+    private void ModeBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        var index = sender.Items.IndexOf(sender.SelectedItem);
+        if (index >= 0)
+        {
+            ViewModel.Mode = (ConnectionMode)index;
+        }
+    }
 
     private void ContentDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
     {
@@ -52,7 +65,7 @@ public sealed partial class LoginDialog : ContentDialog
     private void DataSourceBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args) =>
         ViewModel.DataSource = args.SelectedItem as string ?? ViewModel.DataSource;
 
-    // Sem o tnsnames.ora configurado, pede o arquivo na primeira vez que o campo recebe o foco (como o original).
+    // Modo TNS sem o tnsnames.ora configurado: pede o arquivo na primeira vez que o campo recebe o foco (como o original).
     private async void DataSourceBox_GotFocus(object sender, RoutedEventArgs e)
     {
         if (ViewModel.DataSources.Count == 0 && !ViewModel.HasTnsNames && !_askedForTnsNames)
@@ -120,6 +133,7 @@ public sealed partial class LoginDialog : ContentDialog
     private void ApplySavedConnection(SavedConnection connection)
     {
         ViewModel.ApplySavedConnection(connection);
+        SyncModeBar();
         if (!connection.HasPassword)
         {
             PasswordInput.Focus(FocusState.Programmatic);

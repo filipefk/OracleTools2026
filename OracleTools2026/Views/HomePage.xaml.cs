@@ -12,6 +12,7 @@ public sealed partial class HomePage : Page
 {
     private readonly IOracleSession _session = App.GetService<IOracleSession>();
     private readonly WindowService _windows = App.GetService<WindowService>();
+    private readonly DatabaseObjectRepository _repository = App.GetService<DatabaseObjectRepository>();
 
     public HomePage()
     {
@@ -52,6 +53,41 @@ public sealed partial class HomePage : Page
         }
     }
 
+    // Mesmo diálogo do "Informações do banco de dados" das ferramentas; pede o login se não houver conexão.
+    private async void DatabaseInfoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_windows.FindWindow(XamlRoot) is not { } window)
+        {
+            return;
+        }
+
+        var host = new ToolHost(window);
+        if (!_session.IsConnected && !await host.ShowLoginAsync())
+        {
+            return;
+        }
+
+        IReadOnlyList<DatabaseProperty> details;
+        DatabaseInfoButton.IsEnabled = false;
+        DatabaseInfoProgress.IsActive = true;
+        try
+        {
+            details = await Task.Run(() => _repository.GetDatabaseDetailsAsync());
+        }
+        catch (Exception ex)
+        {
+            await host.ShowMessageAsync("Informações do banco de dados", $"Não foi possível buscar as informações do banco:\n{ex.Message}");
+            return;
+        }
+        finally
+        {
+            DatabaseInfoButton.IsEnabled = true;
+            DatabaseInfoProgress.IsActive = false;
+        }
+
+        await host.ShowDatabaseInfoAsync(details);
+    }
+
     private void Session_ConnectionChanged(object? sender, EventArgs e) => DispatcherQueue.TryEnqueue(UpdateConnection);
 
     private void UpdateConnection()
@@ -60,7 +96,7 @@ public sealed partial class HomePage : Page
         {
             ConnectionInfoBar.Severity = InfoBarSeverity.Success;
             ConnectionInfoBar.Title = "Conectado";
-            ConnectionInfoBar.Message = $"{current.User}@{current.DataSource}";
+            ConnectionInfoBar.Message = current.DisplayName;
         }
         else
         {

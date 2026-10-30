@@ -105,6 +105,19 @@ public sealed partial class LockMonitorViewModel : ToolViewModelBase
         }
     }
 
+    [RelayCommand]
+    private void OpenScriptsFolder()
+    {
+        try
+        {
+            AppFiles.OpenUserDataFolder();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Erro ao abrir a pasta {AppFiles.UserDataFolder}:\n{ex.Message}");
+        }
+    }
+
     private async Task StartMonitoringAsync(int scriptIndex)
     {
         StopMonitoring();

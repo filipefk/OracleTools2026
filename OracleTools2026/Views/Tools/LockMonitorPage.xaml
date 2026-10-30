@@ -54,6 +54,11 @@
                     <AppBarButton.Icon><FontIcon Glyph="&#xE71A;" /></AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarSeparator />
+                <AppBarButton Label="Pasta dos scripts" Command="{x:Bind ViewModel.OpenScriptsFolderCommand}"
+                              ToolTipService.ToolTip="Abre a pasta %APPDATA%\OracleTools2026, onde ficam o ScriptLock01.sql e o ScriptLock02.sql">
+                    <AppBarButton.Icon><FontIcon Glyph="&#xE838;" /></AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarSeparator />
                 <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
                     <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
