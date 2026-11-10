@@ -57,7 +57,7 @@ public partial class App : Application
         var window = windows.OpenToolWindow(tool, commandLine.Length > 4 ? commandLine[4] : null);
         if (connectionError is not null)
         {
-            await window.ShowMessageWhenReadyAsync("Oracle Tools", connectionError);
+            await window.ShowMessageWhenReadyAsync("Oracle Tools 2026", connectionError);
         }
     }
 

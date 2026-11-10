@@ -136,7 +136,7 @@ public sealed partial class DdlExtractor(IOracleSession session)
         var serverInfo = await DatabaseObjectRepository.GetServerInfoAsync(connection, session.Current!.DataSourceDisplay, cancellationToken);
 
         var header = new StringBuilder()
-            .Append("-- Fonte extraído pelo Oracle Tools\n")
+            .Append("-- Fonte extraído pelo Oracle Tools 2026\n")
             .Append($"-- Dados de conexão: {serverInfo}\n")
             .Append($"-- Objeto criado em: {info.CreatedAt:dd/MM/yy HH:mm:ss}\n")
             .Append($"-- Última compilação deste objeto: {info.LastDdlAt:dd/MM/yy HH:mm:ss}\n")

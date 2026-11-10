@@ -26,7 +26,13 @@
     <AssemblyVersion>2.0.0</AssemblyVersion>
     <FileVersion>2.0.0</FileVersion>
     <InformationalVersion>2.0.0</InformationalVersion>
-    <Product>Oracle Tools</Product>
+    <Product>Oracle Tools 2026</Product>
+    <Description>Conjunto de utilitários para administração e gestão de mudanças em bancos de dados Oracle.</Description>
+    <Company>Filipe Kanitz</Company>
+    <Authors>Filipe Kanitz</Authors>
+    <Copyright>Copyright © Filipe Kanitz</Copyright>
+    <!-- Gera Microsoft.WindowsAppSDK.Release (versão do Windows App SDK mostrada no "Sobre"). -->
+    <WindowsAppSdkIncludeVersionInfo>true</WindowsAppSdkIncludeVersionInfo>
   </PropertyGroup>
 
   <ItemGroup>

@@ -32,7 +32,7 @@
 
     <ScrollViewer>
         <StackPanel Padding="36,24,36,36" Spacing="8" MaxWidth="1400" HorizontalAlignment="Left">
-            <TextBlock Text="Oracle Tools" Style="{StaticResource TitleLargeTextBlockStyle}" />
+            <TextBlock Text="Oracle Tools 2026" Style="{StaticResource TitleLargeTextBlockStyle}" />
             <TextBlock Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"
                        Text="Escolha uma ferramenta. Todas usam a mesma conexão; para usar outra ao mesmo tempo, abra uma nova instância (Ctrl+N). Clique com o botão direito em uma ferramenta do menu para abri-la em uma nova janela." />

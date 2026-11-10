@@ -7,6 +7,7 @@ using OracleTools2026.Data;
 using OracleTools2026.Models;
 using OracleTools2026.Services;
 using OracleTools2026.UI;
+using OracleTools2026.Views.Dialogs;
 
 namespace OracleTools2026.Views;
 
@@ -120,6 +121,22 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    {
+        if (args.InvokedItemContainer == AboutItem)
+        {
+            await ShowAboutAsync();
+        }
+    }
+
+    private async void AboutAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        await ShowAboutAsync();
+    }
+
+    private Task ShowAboutAsync() => DialogService.ShowAsync(this, new AboutDialog());
+
     private void Navigate(Type pageType, string? argument = null)
     {
         if (ContentFrame.CurrentSourcePageType == pageType && argument is null)
@@ -156,7 +173,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            await DialogService.ShowMessageAsync(this, "Oracle Tools", $"Não foi possível abrir uma nova instância:\n{ex.Message}");
+            await DialogService.ShowMessageAsync(this, "Oracle Tools 2026", $"Não foi possível abrir uma nova instância:\n{ex.Message}");
         }
     }
 
@@ -180,7 +197,7 @@ public sealed partial class MainWindow : Window
         }
 
         args.Cancel = true;
-        if (await DialogService.AskAsync(this, "Oracle Tools", $"Há {openWindows} ferramenta(s) aberta(s) em outras janelas. Fechar todas e sair?"))
+        if (await DialogService.AskAsync(this, "Oracle Tools 2026", $"Há {openWindows} ferramenta(s) aberta(s) em outras janelas. Fechar todas e sair?"))
         {
             _closeConfirmed = true;
             _windows.CloseToolWindows();

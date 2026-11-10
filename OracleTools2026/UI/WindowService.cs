@@ -45,7 +45,7 @@ public sealed class WindowService
     {
         if (ActiveWindow is { } window)
         {
-            await DialogService.ShowMessageAsync(window, "Oracle Tools", message);
+            await DialogService.ShowMessageAsync(window, "Oracle Tools 2026", message);
         }
     }
 
