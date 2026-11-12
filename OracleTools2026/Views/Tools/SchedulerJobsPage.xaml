@@ -33,7 +33,7 @@
                     <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarSeparator />
-                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}" KeyboardAcceleratorPlacementMode="Hidden">
                     <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
                 </AppBarButton>

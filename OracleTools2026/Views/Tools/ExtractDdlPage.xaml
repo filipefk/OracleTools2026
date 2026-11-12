@@ -49,7 +49,7 @@
                         <AppBarButton.Icon><FontIcon Glyph="&#xE895;" /></AppBarButton.Icon>
                     </AppBarButton>
                     <AppBarSeparator />
-                    <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                    <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}" KeyboardAcceleratorPlacementMode="Hidden">
                         <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
                         <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
                     </AppBarButton>

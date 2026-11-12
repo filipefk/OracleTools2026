@@ -33,7 +33,7 @@
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
             </StackPanel>
             <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent">
-                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}" KeyboardAcceleratorPlacementMode="Hidden">
                     <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
@@ -110,7 +110,7 @@
             </Border>
 
             <Border Grid.Row="1" Style="{StaticResource CardPanelStyle}" Padding="4">
-                <TreeView x:Name="UserTree" SelectionMode="Single"
+                <TreeView x:Name="UserTree" SelectionMode="Single" KeyboardAcceleratorPlacementMode="Hidden"
                           ItemsSource="{x:Bind ViewModel.RootNodes}"
                           Expanding="UserTree_Expanding"
                           SelectionChanged="UserTree_SelectionChanged">

@@ -39,7 +39,7 @@
                     <AppBarButton.Icon><FontIcon Glyph="&#xE711;" /></AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarSeparator />
-                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}">
+                <AppBarButton Label="Conectar" Command="{x:Bind ViewModel.ConnectCommand}" KeyboardAcceleratorPlacementMode="Hidden">
                     <AppBarButton.Icon><FontIcon Glyph="&#xE703;" /></AppBarButton.Icon>
                     <AppBarButton.KeyboardAccelerators><KeyboardAccelerator Modifiers="Control" Key="L" /></AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
@@ -73,7 +73,7 @@
             </StackPanel>
         </Grid>
 
-        <tv:TableView x:Name="SessionsTable" Grid.Row="3" Margin="24,0,24,12"
+        <tv:TableView x:Name="SessionsTable" Grid.Row="3" Margin="24,0,24,12" KeyboardAcceleratorPlacementMode="Hidden"
                       Style="{StaticResource ToolTableViewStyle}"
                       ItemsSource="{x:Bind ViewModel.Sessions.Items}">
             <tv:TableView.KeyboardAccelerators>
