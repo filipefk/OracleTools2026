@@ -28,7 +28,7 @@ Release.cmd                     # Compila em Release e gera o instalador
 OracleTools2026.Core/           # Biblioteca sem interface
 ├── Models/                     # Records de domínio (DatabaseObject, DatabaseSession, SchedulerJob, DatabaseLink...)
 ├── Settings/                   # Preferências no registro, conexões salvas e criptografia compatível com o original
-├── Data/                       # Acesso ao Oracle: sessão, listagens, DDL, usuários, recompilação, sessões, jobs, DBLINKs, scripts
+├── Data/                       # Acesso ao Oracle: sessão, listagens, DDL, usuários, recompilação, sessões, jobs, DBLINKs, scripts, artefatos Senior
 ├── Services/                   # Saída da DDL, arquivos auxiliares, nomes reais, Active Directory, nova instância, aviso sonoro
 ├── Formatting/                 # Formatos das listas (datas, durações, valores, texto separado por TAB)
 ├── Presentation/               # Interfaces usadas pelos ViewModels (IToolHost, IClipboardService, IToolNavigator...)
@@ -80,6 +80,50 @@ Extensões dos arquivos gerados:
 | JAVA SOURCE | `.jsp` |
 | SEQUENCE, JOB | `.sql` |
 
+### Exportar artefatos Senior (`ExtractSeniorPage`)
+- Exporta os artefatos customizados do Senior ERP para versionar no Git: gera a árvore `senior/` dentro da pasta escolhida.
+- O **schema** é escolhido na tela, entre os owners que têm a tabela `R960SRV` (padrão: o usuário conectado).
+- Tipos marcáveis:
+  - **Webservices**: `R960SRV`, `R960PRT` e `R960RUL`, exceto os serviços padrão `com.senior.*`. O fonte LSP das regras (`RULDAT`) é decodificado. Gera também o `dependencias.yaml`, com os serviços chamados (`Definir interno.<serviço>`) e as tabelas `USU_T*` usadas por cada porta.
+  - **CBDS**: tabelas `USU_T*` com campos e índices (`R998TBL`, `R998FLD`, `R998IND`, `R998FND`), campos `USU_*` de tabelas padrão, listas (`R998LST`, `R998LSF`) e visões (`R998VIW`, com o SQL concatenado na ordem de `VIWSEQ`).
+  - **Vínculos de regras** (`E098REG`), agrupados por módulo e identificador.
+  - **DDL de referência** das tabelas `USU_T*` (`DBMS_METADATA.GET_DDL`, sem parâmetros de armazenamento).
+- Só lê o banco (`SELECT`). A `R960PRV`, que guarda credenciais, nunca é lida.
+
+```
+senior/
+  webservices/<serviço>/servico.yaml
+  webservices/<serviço>/<porta>/porta.yaml · parametros.xml · regra.lsp
+  cbds/tabelas/<tabela>.yaml · <tabela>.oracle.sql
+  cbds/campos/<tabela padrão>.yaml
+  cbds/listas/<lista>.yaml
+  cbds/visoes/<visão>.yaml
+  regras/<módulo>/<identificador>/vinculos.yaml
+  dependencias.yaml
+```
+
+- **Arquivos para um diff limpo:**
+  - UTF-8 sem BOM, com fim de linha LF.
+  - Ordem sempre igual: por nome, depois ordem ou sequência.
+  - Ficam de fora os campos voláteis (`PRMDTM`, `LASUPD`, `CODUSU`, `USUGER`, `DATGER`, `HORGER`) e o trecho `<changeHistory>` do `PRMDEF`.
+  - Arquivos sem alteração não são regravados.
+- **Nomes das colunas:** as que têm nome conhecido usam o nome do YAML das amostras, com a coluna de origem em comentário. As outras saem com o nome da própria coluna, em minúsculas.
+- **Listar (F5):** mostra antes da exportação os itens que seriam gravados:
+  - As colunas são tipo, nome, detalhe (portas, campos, índices, vínculos), última alteração, situação e mensagem.
+  - A lista vem com a quantidade por tipo e pode ser ordenada e filtrada pelas colunas.
+  - A última alteração é a maior data entre `LASUPD`, `PRMDTM` e `DATGER` + `HORGER` da linha e das linhas filhas. Essas colunas continuam fora dos arquivos.
+  - A listagem não lê o fonte das regras nem extrai DDL.
+  - Trocar o schema, os tipos ou a conexão limpa a lista.
+- **Exportar** grava só os itens marcados na lista. Se a lista não foi carregada, ou se todos estão marcados, a exportação é completa. O banco é lido de novo na exportação, e o DDL é extraído só das tabelas marcadas.
+  - A exportação parcial não procura órfãos, porque eles seriam os itens desmarcados.
+  - O `dependencias.yaml` é sempre montado com todos os serviços.
+- **Andamento:**
+  - A barra de status avança por consulta, por tabela no DDL e por item gravado.
+  - A coluna Situação de cada item mostra Aguardando, Gravado, Sem alteração, Erro (com a mensagem), Não marcado ou Não encontrado.
+  - Acima da lista aparece o total de cada situação.
+- **Arquivos órfãos:** o que está nas pastas dos tipos exportados e não veio desta exportação, ou seja, o que foi removido no banco, é apagado após confirmação. Isso vale só na exportação completa. Os arquivos de um item com erro são mantidos, como uma regra que não decodificou ou uma DDL que falhou.
+- **Resumo:** ao final, mostra as quantidades por tipo, os erros por item e os avisos de possíveis segredos no fonte das regras (`senha`, `password`, `token`... com valor fixo). Os avisos não bloqueiam a exportação.
+
 ### Extrair script de criação de usuários (`ExtractUserPage`)
 - Lista os usuários do banco filtrando por owner (todos, que sejam owner de objetos ou que não sejam), profile, parte do nome e um **filtro SQL** livre opcional (condição extra, sem `WHERE` nem o primeiro `AND`, guardada na preferência `FiltroPesquisaUsuarios` do original).
 - Colunas: nome, criação, profile, status, data de lock, data de expiração e último login. O último login vem de `DBA_USERS.LAST_LOGIN` (Oracle 12c+; em versões anteriores fica em branco). Usuários bloqueados aparecem em cinza.
@@ -122,6 +166,8 @@ Extensões dos arquivos gerados:
 ### Arquivos auxiliares
 Os arquivos `ScriptLock01.sql`, `ScriptLock02.sql`, `Lista_Usuarios2.txt` e `ListaNomesAd.txt` são procurados primeiro em `%APPDATA%\OracleTools2026` e depois na pasta do executável. Como a pasta de instalação não tem permissão de escrita, o `ListaNomesAd.txt` é sempre gravado em `%APPDATA%\OracleTools2026`. O instalador copia `ScriptLock01.sql` e `ScriptLock02.sql` (fontes em `OracleTools2026\Instalador\AppData\`) para `%APPDATA%\OracleTools2026` do usuário que executa a instalação, sem sobrescrever versões já existentes.
 
+**Log de diagnóstico:** o arquivo `%APPDATA%\OracleTools2026\diagnostico.log` registra os erros das operações, as exceções não tratadas e, com a pilha de chamadas, toda exceção .NET no momento em que é lançada. As exceções lançadas são limitadas a 1000 por execução. Isso serve para investigar falhas do WinUI que fecham o programa sem mensagem. Os argumentos da linha de comando (usuário e senha) não são gravados, só o nome da ferramenta. Acima de 5 MB, o log vai para `diagnostico.old.log` na próxima abertura.
+
 ### Ainda não migradas
 Detalhes de role, controle de concorrência, backups de objetos, alerta baseado em consulta, agendamento de scripts.
 
@@ -140,6 +186,7 @@ OracleTools2026.exe <FERRAMENTA> [usuario senha alias_tns] [nome]
 | `SESSOES` | Sessões ativas |
 | `JOBS_DE_BANCO` | Jobs de banco |
 | `DBLINKS` | DBLINKs |
+| `EXTRACT_SENIOR` | Exportar artefatos Senior |
 
 Sem argumento ou com um argumento desconhecido, abre a janela principal. Com uma ferramenta, ela abre sozinha numa janela própria. Com usuário, senha e alias, a ferramenta já abre conectada (Sessões, Jobs e DBLINKs já listam ao abrir; Detalhes de um usuário já pesquisa o usuário informado).
 

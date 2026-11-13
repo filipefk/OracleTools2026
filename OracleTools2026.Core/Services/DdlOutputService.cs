@@ -30,7 +30,7 @@ public sealed class DdlOutputService
         foreach (var result in results.Where(r => r.Succeeded))
         {
             Directory.CreateDirectory(targetFolder);
-            await File.WriteAllTextAsync(Path.Combine(targetFolder, ToSafeFileName(result.FileName)), result.Script, FileEncoding, cancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(targetFolder, FileNames.ToSafeFileName(result.FileName)), result.Script, FileEncoding, cancellationToken);
             saved++;
         }
 
@@ -41,7 +41,7 @@ public sealed class DdlOutputService
 
     public async Task OpenInEditorAsync(string text, string fileName, CancellationToken cancellationToken = default)
     {
-        var path = Path.Combine(Path.GetTempPath(), ToSafeFileName(fileName));
+        var path = Path.Combine(Path.GetTempPath(), FileNames.ToSafeFileName(fileName));
         await File.WriteAllTextAsync(path, text, FileEncoding, cancellationToken);
         OpenWithShell(path);
     }
@@ -53,9 +53,6 @@ public sealed class DdlOutputService
 
     public static string Combine(IEnumerable<UserScriptResult> results) =>
         string.Join("\r\n\r\n", results.Where(r => r.Succeeded).Select(r => r.Script));
-
-    private static string ToSafeFileName(string fileName) =>
-        string.Concat(fileName.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
 
     private static void OpenWithShell(string path) =>
         Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });

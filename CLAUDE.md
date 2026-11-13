@@ -16,8 +16,9 @@ OracleTools2026.Core/      # biblioteca sem interface (não referencia WinUI)
 ├── Models/                # records imutáveis (sem lógica de banco)
 ├── Settings/              # IAppSettings (registro), conexões salvas (Oracle e AD, via ObfuscatedRecordList), LegacyCipher, SettingNames
 ├── Data/                  # IOracleSession + repositórios/serviços de banco (DatabaseObjectRepository, DdlExtractor, DatabaseUserRepository, UserScriptGenerator, ScriptRunner...)
-├── Services/              # saída/integração com o SO (DdlOutputService, AppFiles, RealNameDirectory, ActiveDirectoryService, ToolLauncher = nova instância, SystemSound)
-├── Formatting/            # DisplayFormat (datas, durações, valores, bytes) e TabularText (TSV com cabeçalho)
+│   └── Senior/            # exportação dos artefatos do Senior (SeniorRepository, SeniorRuleDecoder, SeniorDependencyScanner); única exceção à regra das tabelas de aplicação
+├── Services/              # saída/integração com o SO (DdlOutputService, SeniorExportWriter, FileNames, AppFiles, RealNameDirectory, ActiveDirectoryService, ToolLauncher = nova instância, SystemSound)
+├── Formatting/            # DisplayFormat (datas, durações, valores, bytes), TabularText (TSV com cabeçalho) e YamlText (YAML simples, sem pacote)
 ├── Presentation/          # interfaces de interface usadas pelos ViewModels: IToolHost, IClipboardService, IToolNavigator, IToolArgumentReceiver, ToolCommands
 └── ViewModels/            # ToolViewModelBase + um ViewModel por ferramenta/diálogo, itens de linha (CheckableItem, ItemList, CheckableItemList)
 OracleTools2026/           # app WinUI 3 (não empacotado)
@@ -40,9 +41,16 @@ OracleTools2026/           # app WinUI 3 (não empacotado)
 - **Diálogos**: só pode haver um `ContentDialog` aberto por janela; use sempre `UI/DialogService` (fila por janela; a classe não se chama `Dialogs` para não colidir com o namespace `Views.Dialogs`). Dentro de um diálogo, não abra outro: confirmações usam `Flyout` e erros aparecem numa `InfoBar` do próprio diálogo.
 - **Listas**: `WinUI.TableView` com o estilo `ToolTableViewStyle`, colunas `TableViewTextColumn` ligadas a propriedades de texto já formatadas pelo item (`DisplayFormat`) e `SortMemberPath` apontando para o valor original (datas, durações) para ordenar corretamente. Linhas com checkbox: itens derivados de `CheckableItem` em `CheckableItemList` (contagem e "Selecionar todos"). Cores de linha via `ConditionalCellStyles` com predicados na página e os estilos `*CellStyle` de `AppStyles.xaml` (funcionam nos temas claro e escuro). `TableViewHelper.Attach` sincroniza a seleção com `ItemList.Selected` e faz o Ctrl+C copiar com cabeçalho; menus de contexto são montados em `RowContextFlyoutOpening` com `MenuBuilder`.
 - **Arquivos auxiliares** (`AppFiles`): procurados em `%APPDATA%\OracleTools2026` e depois na pasta do executável; gravações vão para o `%APPDATA%`. Leitura aceita ANSI (formato do original) e UTF-8.
+- **Log de diagnóstico** (`Services/DiagnosticLog`):
+  - Instalado no início do `App`.
+  - Grava em `%APPDATA%\OracleTools2026\diagnostico.log` as exceções first chance com a pilha, as não tratadas e os erros capturados pelo `RunAsync`.
+  - Exceções lançadas *depois* do `RunAsync` num comando assíncrono fecham o processo (o WinUI não as recupera, mesmo com `Handled = true`). Por isso a lógica que pode falhar fica dentro da operação.
+  - Nunca gravar no log senhas ou argumentos da linha de comando.
 
 - `IOracleSession` (singleton) guarda a `ConnectionInfo` atual, abre conexões (pool do driver, uma conexão por operação) e expõe o evento `ConnectionChanged`.
 - Consultas usam apenas objetos do próprio Oracle (dicionário de dados, `V$`/`GV$`, `DBMS_*`). **Não** referenciar tabelas, funções ou schemas de aplicação (ex.: `AESPROD`, `HORACIUS`, `ORADBA`), mesmo que o original os use.
+  - **Exceção única: `Data/Senior/`** (ferramenta "Exportar artefatos Senior", `EXTRACT_SENIOR`). Só ela, só `SELECT` e só nas tabelas do Senior `R960SRV`, `R960PRT`, `R960RUL`, `R998*` e `E098REG`. A `R960PRV` (credenciais dos provedores) **nunca** é lida. O schema escolhido na tela é sempre validado contra `ALL_TABLES` (owners que têm a `R960SRV`) antes de entrar no SQL com `OracleExtensions.Quote`. As tabelas são lidas com `SELECT *` e só as colunas-chave ficam fixas no código (`SeniorColumns`), porque as colunas variam entre versões do Senior.
+- **Extração sem impacto no banco**: a extração de DDL (`DdlExtractor`, `DatabaseObjectRepository`) e a de artefatos Senior (`Data/Senior/`) rodam em ambientes de produção e **não podem causar lentidão, lock nem qualquer impacto** no banco. Só leitura (nada de DML, DDL, `FOR UPDATE`, `LOCK TABLE`, tabelas temporárias ou alteração de parâmetros de sessão/sistema que afetem outros usuários); consultas filtradas e paginadas/por streaming em vez de varreduras amplas repetidas; evitar chamadas por objeto em laço quando uma consulta em lote resolve; respeitar o `CancellationToken` em cada etapa e não manter conexões ou cursores abertos além do necessário.
 - Classes de `Data/` e `Services/` **não acessam a UI**: lançam exceções ou retornam resultados (ex.: `DdlExtractionResult` com `Error`). Só os ViewModels decidem as mensagens, e só o app (WinUI) as mostra.
 - Serviços e ViewModels são resolvidos pelo container (`App.CreateHost`); páginas e janelas não são registradas (o `Frame` cria as páginas). Ao criar um novo serviço/ViewModel, registre-o em `CreateHost`.
 - Operações de banco nas telas: usar o `RunAsync` do ViewModel (desabilita comandos, mostra progresso, permite cancelar) e chamar os serviços dentro de `Task.Run(...)` para não bloquear a thread de UI.
@@ -63,7 +71,7 @@ OracleTools2026/           # app WinUI 3 (não empacotado)
 - Preferências no registro em `HKCU\Software\ORACLE_Tools\Parametros`, **com os mesmos nomes de chave** (constantes em `Settings/SettingNames.cs`). Flags booleanas aceitam `1/0/TRUE/FALSE/SIM/NÃO` e são gravadas como `1`/`0`.
 - Conexões salvas (`ConexoesORACLE` e `ConexoesAD`): manter o formato e a ofuscação de `ObfuscatedRecordList` e a criptografia de `LegacyCipher` (AES-CBC, PBKDF2-SHA1 1000 iterações, mesmas chaves), para que as duas versões leiam os mesmos dados.
 - Login sem tnsnames.ora: o banco é sempre um texto no `Data Source` (alias TNS, EZConnect ou descritor; `ServerAddress` converte de/para host, porta e serviço/SID). O privilégio (`DbaPrivilege`) é gravado junto do usuário no formato do sqlplus (`SYS AS SYSDBA`, `ConnectionInfo.StoredUser`/`SplitUser`) nas conexões salvas e no último login, sem campo novo no registro.
-- Linha de comando: `<FERRAMENTA> [usuario senha alias_tns]`, com os mesmos nomes de ferramenta do original (`EXTRACT_DDL_SOURCE`, `EXTRACT_DDL_USER`, `DETALHES_USER`, `SESSOES`, `DBLINKS`, `JOBS_DE_BANCO`...).
+- Linha de comando: `<FERRAMENTA> [usuario senha alias_tns]`, com os mesmos nomes de ferramenta do original (`EXTRACT_DDL_SOURCE`, `EXTRACT_DDL_USER`, `DETALHES_USER`, `SESSOES`, `DBLINKS`, `JOBS_DE_BANCO`...). Ferramentas sem equivalente no original usam nomes no mesmo estilo (`EXTRACT_SENIOR`).
 
 ## Build
 

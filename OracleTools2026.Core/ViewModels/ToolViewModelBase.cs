@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using OracleTools2026.Data;
 using OracleTools2026.Models;
 using OracleTools2026.Presentation;
+using OracleTools2026.Services;
 using System.Reflection;
 
 namespace OracleTools2026.ViewModels;
@@ -260,6 +261,7 @@ public abstract partial class ToolViewModelBase : ObservableObject
         }
         catch (Exception ex)
         {
+            DiagnosticLog.Write($"Erro em \"{description}\" ({GetType().Name})", ex);
             ShowError(ex.Message);
             return false;
         }

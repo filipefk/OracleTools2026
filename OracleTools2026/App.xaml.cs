@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using OracleTools2026.Data;
+using OracleTools2026.Data.Senior;
 using OracleTools2026.Models;
 using OracleTools2026.Presentation;
 using OracleTools2026.Services;
@@ -11,6 +12,7 @@ using OracleTools2026.ViewModels;
 using OracleTools2026.ViewModels.DatabaseLinks;
 using OracleTools2026.ViewModels.Dialogs;
 using OracleTools2026.ViewModels.ExtractDdl;
+using OracleTools2026.ViewModels.ExtractSenior;
 using OracleTools2026.ViewModels.ExtractUser;
 using OracleTools2026.ViewModels.LockMonitor;
 using OracleTools2026.ViewModels.Preferences;
@@ -26,6 +28,7 @@ public partial class App : Application
 
     public App()
     {
+        DiagnosticLog.Install();
         InitializeComponent();
         _host = CreateHost();
 
@@ -88,6 +91,7 @@ public partial class App : Application
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
+        DiagnosticLog.Write("Exceção não tratada (XAML)", e.Exception, $"Mensagem: {e.Message}");
         e.Handled = true;
         _ = GetService<WindowService>().ShowErrorInActiveWindowAsync(e.Exception?.Message ?? e.Message);
     }
@@ -110,7 +114,11 @@ public partial class App : Application
         services.AddSingleton<SessionRepository>();
         services.AddSingleton<SchedulerJobRepository>();
         services.AddSingleton<DatabaseLinkRepository>();
+        services.AddSingleton<SeniorRepository>();
+        services.AddSingleton<SeniorRuleDecoder>();
+        services.AddSingleton<SeniorDependencyScanner>();
         services.AddSingleton<DdlOutputService>();
+        services.AddSingleton<SeniorExportWriter>();
         services.AddSingleton<LockScriptStore>();
         services.AddSingleton<RealNameDirectory>();
         services.AddSingleton<ActiveDirectoryService>();
@@ -125,6 +133,7 @@ public partial class App : Application
         // ViewModels: cada página (ou janela avulsa) tem a sua instância.
         services.AddTransient<ExtractDdlViewModel>();
         services.AddTransient<ExtractUserViewModel>();
+        services.AddTransient<ExtractSeniorViewModel>();
         services.AddTransient<UserDetailsViewModel>();
         services.AddTransient<LockMonitorViewModel>();
         services.AddTransient<SessionsViewModel>();

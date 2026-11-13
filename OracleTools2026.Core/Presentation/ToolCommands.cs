@@ -10,4 +10,5 @@ public static class ToolCommands
     public const string Sessions = "SESSOES";
     public const string SchedulerJobs = "JOBS_DE_BANCO";
     public const string DatabaseLinks = "DBLINKS";
+    public const string ExtractSenior = "EXTRACT_SENIOR";
 }
