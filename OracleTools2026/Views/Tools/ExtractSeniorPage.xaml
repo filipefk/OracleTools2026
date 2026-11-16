@@ -145,6 +145,9 @@
             <tv:TableView x:Name="ItemsTable" Grid.Row="1"
                           Style="{StaticResource ToolTableViewStyle}"
                           ItemsSource="{x:Bind ViewModel.Items.Items}">
+                <tv:TableView.RowContextFlyout>
+                    <MenuFlyout />
+                </tv:TableView.RowContextFlyout>
                 <tv:TableView.ConditionalCellStyles>
                     <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsError}" Style="{StaticResource CriticalCellStyle}" />
                     <tv:TableViewConditionalCellStyle Predicate="{x:Bind IsWritten}" Style="{StaticResource SuccessCellStyle}" />

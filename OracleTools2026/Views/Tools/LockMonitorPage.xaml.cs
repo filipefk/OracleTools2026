@@ -55,12 +55,7 @@ public sealed partial class LockMonitorPage : ToolPage
         }
 
         menu.Items.Clear();
-        if (ViewModel.Rows.HasSelection)
-        {
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(LocksTable));
-        }
-
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(LocksTable));
+        menu.AddCopyItems(LocksTable, e.Item, ViewModel.Rows.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

@@ -51,12 +51,7 @@ public sealed partial class SessionsPage : ToolPage
             menu.AddSeparator();
         }
 
-        if (ViewModel.Sessions.HasSelection)
-        {
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(SessionsTable));
-        }
-
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(SessionsTable));
+        menu.AddCopyItems(SessionsTable, e.Item, ViewModel.Sessions.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

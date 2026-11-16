@@ -42,10 +42,9 @@ public sealed partial class DatabaseLinksPage : ToolPage
         {
             menu.Add("Testar DBLINKs selecionados", Glyphs.Test, () => ViewModel.TestSelectedCommand.Execute(null));
             menu.AddSeparator();
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(LinksTable));
         }
 
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(LinksTable));
+        menu.AddCopyItems(LinksTable, e.Item, ViewModel.Links.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

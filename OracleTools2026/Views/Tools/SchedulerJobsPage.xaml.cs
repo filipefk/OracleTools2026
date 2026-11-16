@@ -58,12 +58,7 @@ public sealed partial class SchedulerJobsPage : ToolPage
             menu.AddSeparator();
         }
 
-        if (ViewModel.Jobs.HasSelection)
-        {
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(JobsTable));
-        }
-
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(JobsTable));
+        menu.AddCopyItems(JobsTable, e.Item, ViewModel.Jobs.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

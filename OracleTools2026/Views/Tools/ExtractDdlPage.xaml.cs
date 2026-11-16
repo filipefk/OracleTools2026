@@ -107,12 +107,7 @@ public sealed partial class ExtractDdlPage : ToolPage
             menu.AddSeparator();
         }
 
-        if (ViewModel.Objects.HasSelection)
-        {
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(ObjectsTable));
-        }
-
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(ObjectsTable));
+        menu.AddCopyItems(ObjectsTable, e.Item, ViewModel.Objects.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

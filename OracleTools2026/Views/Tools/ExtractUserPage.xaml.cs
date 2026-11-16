@@ -69,12 +69,7 @@ public sealed partial class ExtractUserPage : ToolPage
             menu.AddSeparator();
         }
 
-        if (ViewModel.Users.HasSelection)
-        {
-            menu.Add("Copiar linhas selecionadas", Glyphs.Copy, () => TableViewHelper.CopySelected(UsersTable));
-        }
-
-        menu.Add("Copiar toda a lista", null, () => TableViewHelper.CopyAll(UsersTable));
+        menu.AddCopyItems(UsersTable, e.Item, ViewModel.Users.HasSelection);
         menu.AddSeparator();
         menu.Add("Informações do banco de dados", Glyphs.Info, () => ViewModel.ShowServerInfoCommand.Execute(null));
     }

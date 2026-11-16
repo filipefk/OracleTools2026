@@ -54,7 +54,7 @@ OracleTools2026/                # App WinUI 3
 - Para usar outro banco ao mesmo tempo, **Nova instância** (Ctrl+N ou botão na barra de título) abre outro processo do programa, com a sua própria conexão. Ferramentas chamadas pela linha de comando também rodam em processo isolado.
 - Fechar a janela principal fecha também as ferramentas abertas em outras janelas (com confirmação).
 - Cada ferramenta tem no topo o banco conectado e os comandos, uma barra de avisos (InfoBar) para mensagens e erros, e no rodapé o status, o progresso e o botão **Cancelar** (Esc) da operação em andamento.
-- Nas listas: ordenação, filtro e redimensionamento pelo cabeçalho das colunas; Ctrl+A seleciona tudo; Ctrl+C copia as linhas selecionadas (com o cabeçalho, separadas por TAB); o botão direito abre o menu da linha, que muda conforme a linha.
+- Nas listas: ordenação, filtro e redimensionamento pelo cabeçalho das colunas; Ctrl+A seleciona tudo; Ctrl+C copia as linhas selecionadas (com o cabeçalho, separadas por TAB); o botão direito abre o menu da linha, que muda conforme a linha e sempre oferece "Copiar célula", "Copiar linhas selecionadas" e "Copiar toda a lista".
 - A lista de ferramentas fica em `ToolCatalog.cs`, usada também pelo roteamento da linha de comando.
 
 ### Extrair DDL de objetos de banco (`ExtractDdlPage`)
