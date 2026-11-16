@@ -134,45 +134,68 @@ public static class TableViewHelper
     // No WinUI.TableView 1.5.1, ao redimensionar a coluna pelo cabeçalho, as células das linhas já
     // exibidas podem ficar com a largura antiga. Reaplica a largura da coluna nas células visíveis
     // sempre que a largura de uma coluna muda.
+    private static readonly ConditionalWeakTable<TableView, WidthSync> WidthSyncs = new();
+
     private static void KeepCellWidthsInSync(TableView table)
     {
-        var pending = false;
+        WidthSyncs.GetOrCreateValue(table).Table = table;
+        WatchColumns(table);
 
-        void Schedule(DependencyObject sender, DependencyProperty property)
+        if (table.Columns is INotifyCollectionChanged observable)
         {
-            if (pending)
-            {
-                return;
-            }
-
-            pending = true;
-            table.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-            {
-                pending = false;
-                SyncCellWidths(table);
-            });
+            observable.CollectionChanged += (_, _) => WatchColumns(table);
         }
+    }
 
-        void Watch(TableViewColumn column)
+    // Colunas criadas depois do Attach (ex.: montadas a partir do resultado de um script) precisam
+    // ser registradas: a coleção de colunas do TableView nem sempre avisa as inclusões.
+    public static void WatchColumns(TableView table)
+    {
+        if (!WidthSyncs.TryGetValue(table, out var sync))
         {
-            column.RegisterPropertyChangedCallback(TableViewColumn.ActualWidthProperty, Schedule);
-            column.RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, Schedule);
+            return;
         }
 
         foreach (var column in table.Columns)
         {
-            Watch(column);
+            sync.Watch(column);
         }
 
-        if (table.Columns is INotifyCollectionChanged observable)
+        sync.Schedule();
+    }
+
+    private sealed class WidthSync
+    {
+        private readonly ConditionalWeakTable<TableViewColumn, object> _watched = new();
+        private bool _pending;
+
+        public TableView? Table { get; set; }
+
+        public void Watch(TableViewColumn column)
         {
-            observable.CollectionChanged += (_, e) =>
+            if (_watched.TryGetValue(column, out _))
             {
-                foreach (var column in e.NewItems?.OfType<TableViewColumn>() ?? [])
-                {
-                    Watch(column);
-                }
-            };
+                return;
+            }
+
+            _watched.Add(column, new object());
+            column.RegisterPropertyChangedCallback(TableViewColumn.ActualWidthProperty, (_, _) => Schedule());
+            column.RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, (_, _) => Schedule());
+        }
+
+        public void Schedule()
+        {
+            if (_pending || Table is not { } table)
+            {
+                return;
+            }
+
+            _pending = true;
+            table.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+            {
+                _pending = false;
+                SyncCellWidths(table);
+            });
         }
     }
 

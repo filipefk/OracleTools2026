@@ -41,6 +41,8 @@ public sealed partial class LockMonitorPage : ToolPage
                 Binding = new Binding { Path = new PropertyPath($"Values[{i}]") }
             });
         }
+
+        TableViewHelper.WatchColumns(LocksTable);
     }
 
     private void CopyScript1_Click(object sender, RoutedEventArgs e) => ViewModel.CopyScriptCommand.Execute(0);
